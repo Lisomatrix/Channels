@@ -4,7 +4,7 @@
 
 ## What is Channels?
 
-Channels is a Golang server and some client libraries, mainly for IOS, Android and Javascript, that allow real time communication in channels.<br>
+Channels is a Golang server and some client libraries, mainly for [IOS](https://github.com/Lisomatrix/ChannelsSDK_Swift), [Android](https://github.com/Lisomatrix/ChannelsSDK_Android) and [Javascript](https://github.com/Lisomatrix/ChannelsSDK_JS), that allow real time communication in channels.<br>
 Think of front facing publish subscribe system.
 
 ## Why?
