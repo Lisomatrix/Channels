@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	Server struct {
+	JWTSecret string `yaml:"jwt"`
+	Server    struct {
 		Host string `yaml:"host"`
 		Port string `yaml:"port"`
 	} `yaml:"server"`

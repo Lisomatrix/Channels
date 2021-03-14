@@ -100,7 +100,7 @@ func PostEventHandler(context *gin.Context) {
 	// If it doesn't exist
 	// Check it from the database
 	if channel == nil /*!exists*/ {
-		channel, err := GetEngine().GetChannelRepository().GetAppChannel(appID, channelID)
+		channel, err = GetEngine().GetChannelRepository().GetAppChannel(appID, channelID)
 		//exists, err := GetEngine().GetChannelRepository().ExistsAppChannel(appID, channelID)
 
 		if err != nil {
@@ -115,6 +115,11 @@ func PostEventHandler(context *gin.Context) {
 		}
 
 		GetEngine().GetCacheStorage().StoreChannel(appID, channelID, channel)
+	}
+
+	if channel.IsClosed {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	event := &ChannelEvent{
@@ -193,16 +198,11 @@ func CreateChannelHandler(context *gin.Context) {
 		return
 	}
 
-	if ChannelExists(appID, createChannelRequest.ChannelID) {
-		writer.WriteHeader(http.StatusConflict)
-		return
-	}
-
 	createdAt := time.Now().Unix()
 
 	newChannel := Channel{
-		//ID:         createChannelRequest.ChannelID, //Not used by cache
-		//AppID:      appID, // Not used by cache
+		ID:         createChannelRequest.ChannelID, //Not used by cache
+		AppID:      appID,                          // Not used by cache
 		Name:       createChannelRequest.Name,
 		CreatedAt:  createdAt,
 		IsClosed:   false,
@@ -220,8 +220,6 @@ func CreateChannelHandler(context *gin.Context) {
 	} else {
 		writer.WriteHeader(http.StatusConflict)
 	}
-
-	writer.WriteHeader(http.StatusOK)
 }
 
 // PostJoinChannel - Join user to a channel

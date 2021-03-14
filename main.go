@@ -5,6 +5,7 @@ import (
 	_ "net/http/pprof"
 
 	"lisomatrix.pt/channelserver/channelserver"
+	"lisomatrix.pt/channelserver/channelserver/auth"
 	"lisomatrix.pt/channelserver/channelserver/storage/pgxsql"
 )
 
@@ -20,6 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	auth.SetSecret(config.JWTSecret)
 	pgxsql.PGXSetConnectionParams(config.Database.User, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.DB)
 
 	channelserver.Start(config.Server.Host, config.Server.Port)

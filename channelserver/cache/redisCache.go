@@ -351,6 +351,11 @@ func (cache *RedisCacheStorage) GetClient(appID string, clientID string) *core.C
 		return nil
 	}
 
+	// If username is empty it wasn't in cache
+	if cachedClient.Username == "" {
+		return nil
+	}
+
 	return &core.Client{
 		ID:       clientID,
 		AppID:    appID,

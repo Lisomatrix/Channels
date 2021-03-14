@@ -67,6 +67,7 @@ func GetChannel(appID string, channelID string) (*Channel, error) {
 	channel, err := GetEngine().GetChannelRepository().GetAppChannel(appID, channelID)
 
 	if err != nil {
+
 		fmt.Fprintf(os.Stderr, "Get channel: failed to get app channel %v\n", err)
 		return nil, err
 	}

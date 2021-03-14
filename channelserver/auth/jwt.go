@@ -6,7 +6,11 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtSecret = []byte("tictic5532")
+var jwtSecret = []byte("")
+
+func SetSecret(secret string) {
+	jwtSecret = []byte(secret)
+}
 
 // AuthenticateAdmin - Check if token is valid and is admin kind
 func AuthenticateAdmin(tokenString string) (*Identity, bool) {

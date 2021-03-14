@@ -89,7 +89,7 @@ func (storage *PGXAppRepository) UpdateApp(id string, name string) error {
 func (storage *PGXAppRepository) AppExists(id string) (bool, error) {
 	row := storage.dbHolder.db.QueryRow(storage.ctx, appExistsSQL, id)
 
-	var exists bool
+	var exists int
 
 	err := row.Scan(&exists)
 
@@ -98,7 +98,7 @@ func (storage *PGXAppRepository) AppExists(id string) (bool, error) {
 		return false, err
 	}
 
-	return exists, nil
+	return exists >= 2, nil
 }
 
 // NewSQLPGXAppRepository - Create a new instance of SQLPGXAppRepository

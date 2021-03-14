@@ -343,6 +343,12 @@ func (repo *PGXChannelRepository) GetAppChannel(appID string, channelID string) 
 	chann, err := repo.singleRowToChannel(row)
 
 	if err != nil {
+
+		// TODO: Need a better fix for this
+		if err.Error() == "no rows in result set" {
+			return nil, nil
+		}
+
 		fmt.Fprintf(os.Stderr, "GetAppChannel: row scan failed: %v\n", err)
 		return nil, err
 	}
