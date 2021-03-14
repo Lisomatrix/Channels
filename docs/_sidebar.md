@@ -5,5 +5,8 @@
     * [What can it do?](/#what-can-it-do)
 * [Getting Started](started.md)
 * [App](app.md)
+    * [Creating a App]()
+* [Client](client.md)
 * [Channel](channel.md)
+* [Synchronization](sync.md)
 * [IOS](IOS.md)

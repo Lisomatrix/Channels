@@ -7,6 +7,8 @@
 Channels is a Golang server and some client libraries, mainly for [IOS](https://github.com/Lisomatrix/ChannelsSDK_Swift), [Android](https://github.com/Lisomatrix/ChannelsSDK_Android) and [Javascript](https://github.com/Lisomatrix/ChannelsSDK_JS), that allow real time communication in channels.<br>
 Think of front facing publish subscribe system.
 
+___
+
 ## Why?
 
 > Think of a Pub/Sub with persistence and presence
@@ -14,6 +16,8 @@ Think of front facing publish subscribe system.
 This project was created to serve the purpose of creating a front facing broker and at the same time have the ability to get previous/history data.
 <br><br>
 **For example:** We have a chat app, with **Channels** we receive messages in real time, but we can also open our account in another device and get the messages history along with new updates!
+
+___
 
 ## What can it do?
 
