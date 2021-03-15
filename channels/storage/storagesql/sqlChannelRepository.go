@@ -3,10 +3,10 @@ package storagesql
 import (
 	"database/sql"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"os"
 	"strings"
 
-	"github.com/Channels/Channels/core"
 )
 
 // Channel SQL
@@ -52,14 +52,14 @@ func (repo *ChannelRepository) GetChannelClients(appID string, channelID string)
 	stmt, err := repo.dbHolder.db.Prepare(selectChannelClients)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetChannelClients: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelClients: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(channelID, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetChannelClients: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelClients: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -73,7 +73,7 @@ func (repo *ChannelRepository) GetChannelClients(appID string, channelID string)
 		err = rows.Scan(&channelID)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetChannelClients: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetChannelClients: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -88,14 +88,14 @@ func (repo *ChannelRepository) CreateChannel(id string, appID string, name strin
 	stmt, err := repo.dbHolder.db.Prepare(createChannelSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "CreateChannel: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "CreateChannel: preparing statement failed: %v\n", err)
 		return err
 	}
 
 	_, err = stmt.Exec(id, appID, name, createdAt, isClosed, extra, persistent, private, presence)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "CreateChannel: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "CreateChannel: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -109,14 +109,14 @@ func (repo *ChannelRepository) DeleteChannel(appID string, id string) error {
 	stmt, err := repo.dbHolder.db.Prepare(deleteChannelSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteChannel: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteChannel: preparing statement failed: %v\n", err)
 		return err
 	}
 
 	_, err = stmt.Exec(id, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteChannel: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteChannel: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -130,14 +130,14 @@ func (repo *ChannelRepository) DeleteAppChannels(appID string) error {
 	stmt, err := repo.dbHolder.db.Prepare(deleteAppChannelsSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteAppChannels: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteAppChannels: preparing statement failed: %v\n", err)
 		return err
 	}
 
 	_, err = stmt.Exec(appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteAppChannels: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteAppChannels: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -151,7 +151,7 @@ func (repo *ChannelRepository) JoinClient(appID string, channelID string, client
 	stmt, err := repo.dbHolder.db.Prepare(joinChannelSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "JoinChannel: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "JoinChannel: preparing statement failed: %v\n", err)
 		return err
 	}
 
@@ -162,11 +162,11 @@ func (repo *ChannelRepository) JoinClient(appID string, channelID string, client
 		// We are already expecting this error
 		// This way we can avoid query
 		if !strings.Contains(err.Error(), "duplicate key value") {
-			fmt.Fprintf(os.Stderr, "JoinChannel: statement execution failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "JoinChannel: statement execution failed: %v\n", err)
 			return err
 		}
 
-		fmt.Fprintf(os.Stderr, "JoinChannel WARN: attempted to insert duplicate value: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "JoinChannel WARN: attempted to insert duplicate value: %v\n", err)
 	}
 
 	defer stmt.Close()
@@ -179,14 +179,14 @@ func (repo *ChannelRepository) LeaveClient(appID string, channelID string, clien
 	stmt, err := repo.dbHolder.db.Prepare(leaveChannelSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "LeaveChannel: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "LeaveChannel: preparing statement failed: %v\n", err)
 		return err
 	}
 
 	_, err = stmt.Exec(channelID, clientID, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "LeaveChannel: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "LeaveChannel: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -200,14 +200,14 @@ func (repo *ChannelRepository) SetChannelCloseStatus(appID string, channelID str
 	stmt, err := repo.dbHolder.db.Prepare(setCloseStatusSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "SetChannelCloseStatus: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "SetChannelCloseStatus: preparing statement failed: %v\n", err)
 		return err
 	}
 
 	_, err = stmt.Exec(isClosed, channelID, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "SetChannelCloseStatus: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "SetChannelCloseStatus: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -221,14 +221,14 @@ func (repo *ChannelRepository) GetClientAllowedChannels(clientID string) ([]stri
 	stmt, err := repo.dbHolder.db.Prepare(selectClientAllowedChannelsSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientAllowedChannels: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientAllowedChannels: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientAllowedChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientAllowedChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -242,7 +242,7 @@ func (repo *ChannelRepository) GetClientAllowedChannels(clientID string) ([]stri
 		err = rows.Scan(&channelID)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetClientAllowedChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetClientAllowedChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -257,14 +257,14 @@ func (repo *ChannelRepository) GetClientPublicChannels(clientID string) ([]*core
 	stmt, err := repo.dbHolder.db.Prepare(selectClientOpenOrPrivateChannels)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientPublicChannels: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientPublicChannels: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(false, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientPublicChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientPublicChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -276,7 +276,7 @@ func (repo *ChannelRepository) GetClientPublicChannels(clientID string) ([]*core
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetClientPublicChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetClientPublicChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -291,14 +291,14 @@ func (repo *ChannelRepository) GetClientPrivateChannels(clientID string) ([]*cor
 	stmt, err := repo.dbHolder.db.Prepare(selectClientOpenOrPrivateChannels)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientPrivateChannels: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientPrivateChannels: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(true, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientPrivateChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientPrivateChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -310,7 +310,7 @@ func (repo *ChannelRepository) GetClientPrivateChannels(clientID string) ([]*cor
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetClientPrivateChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetClientPrivateChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -325,14 +325,14 @@ func (repo *ChannelRepository) GetAllPrivateChannels() ([]*core.Channel, error) 
 	stmt, err := repo.dbHolder.db.Prepare(selectAllOpenOrPrivateChannels)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllPrivateChannels: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllPrivateChannels: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(true)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllPrivateChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllPrivateChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -344,7 +344,7 @@ func (repo *ChannelRepository) GetAllPrivateChannels() ([]*core.Channel, error) 
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAllPrivateChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAllPrivateChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -359,14 +359,14 @@ func (repo *ChannelRepository) GetAllPublicChannels() ([]*core.Channel, error) {
 	stmt, err := repo.dbHolder.db.Prepare(selectAllOpenOrPrivateChannels)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllPublicChannels: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllPublicChannels: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(false)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllPublicChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllPublicChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -378,7 +378,7 @@ func (repo *ChannelRepository) GetAllPublicChannels() ([]*core.Channel, error) {
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAllPublicChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAllPublicChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -393,14 +393,14 @@ func (repo *ChannelRepository) GetAppPrivateChannels(appID string) ([]*core.Chan
 	stmt, err := repo.dbHolder.db.Prepare(selectOpenOrPrivateAppChannels)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppPrivateChannels: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppPrivateChannels: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(true, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppPrivateChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppPrivateChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -412,7 +412,7 @@ func (repo *ChannelRepository) GetAppPrivateChannels(appID string) ([]*core.Chan
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAppPrivateChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAppPrivateChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -427,14 +427,14 @@ func (repo *ChannelRepository) GetAppPublicChannels(appID string) ([]*core.Chann
 	stmt, err := repo.dbHolder.db.Prepare(selectOpenOrPrivateAppChannels)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppPublicChannels: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppPublicChannels: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(false, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppPublicChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppPublicChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -446,7 +446,7 @@ func (repo *ChannelRepository) GetAppPublicChannels(appID string) ([]*core.Chann
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAppPublicChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAppPublicChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -461,7 +461,7 @@ func (repo *ChannelRepository) GetAppChannel(appID string, channelID string) (*c
 	stmt, err := repo.dbHolder.db.Prepare(selectAppChannel)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppChannel: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppChannel: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
@@ -472,7 +472,7 @@ func (repo *ChannelRepository) GetAppChannel(appID string, channelID string) (*c
 	chann, err := repo.singleRowToChannel(row)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppChannel: row scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppChannel: row scan failed: %v\n", err)
 		return nil, err
 	}
 
@@ -484,14 +484,14 @@ func (repo *ChannelRepository) GetAppChannels(appID string) ([]*core.Channel, er
 	stmt, err := repo.dbHolder.db.Prepare(selectAppChannels)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppChannels: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppChannels: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -503,7 +503,7 @@ func (repo *ChannelRepository) GetAppChannels(appID string) ([]*core.Channel, er
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAppChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAppChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -518,7 +518,7 @@ func (repo *ChannelRepository) ExistsAppChannel(appID string, channelID string) 
 	stmt, err := repo.dbHolder.db.Prepare(selectAppChannelExists)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ExistsAppChannel: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "ExistsAppChannel: preparing statement failed: %v\n", err)
 		return false, err
 	}
 
@@ -531,7 +531,7 @@ func (repo *ChannelRepository) ExistsAppChannel(appID string, channelID string) 
 	err = row.Scan(&amount)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ExistsAppChannel: row scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "ExistsAppChannel: row scan failed: %v\n", err)
 		return false, err
 	}
 
@@ -543,7 +543,7 @@ func (repo *ChannelRepository) GetAppChannelsCount(appID string) (uint64, error)
 	stmt, err := repo.dbHolder.db.Prepare(selectAppChannelAmount)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppChannelsCount: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppChannelsCount: preparing statement failed: %v\n", err)
 		return 0, err
 	}
 
@@ -556,7 +556,7 @@ func (repo *ChannelRepository) GetAppChannelsCount(appID string) (uint64, error)
 	err = row.Scan(&amount)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppChannelsCount: row scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppChannelsCount: row scan failed: %v\n", err)
 		return 0, err
 	}
 
@@ -568,14 +568,14 @@ func (repo *ChannelRepository) GetAllChannels() ([]*core.Channel, error) {
 	stmt, err := repo.dbHolder.db.Prepare(selectAllChannels)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllChannels: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllChannels: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -587,7 +587,7 @@ func (repo *ChannelRepository) GetAllChannels() ([]*core.Channel, error) {
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAllChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAllChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -602,7 +602,7 @@ func (repo *ChannelRepository) GetAllChannelsCount() (uint64, error) {
 	stmt, err := repo.dbHolder.db.Prepare(selectAllChannelsAmount)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllChannelsCount: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllChannelsCount: preparing statement failed: %v\n", err)
 		return 0, err
 	}
 
@@ -615,7 +615,7 @@ func (repo *ChannelRepository) GetAllChannelsCount() (uint64, error) {
 	err = row.Scan(&amount)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllChannelsCount: row scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllChannelsCount: row scan failed: %v\n", err)
 		return 0, err
 	}
 
@@ -633,14 +633,14 @@ func (repo *ChannelRepository) AddChannelEvent(appID string, channelID string, e
 	stmt, err := repo.dbHolder.db.Prepare(addChannelEventSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "AddChannelEvent: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "AddChannelEvent: preparing statement failed: %v\n", err)
 		return err
 	}
 
 	_, err = stmt.Exec(event.SenderID, event.EventType, event.Payload, channelID, event.Timestamp, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "AddChannelEvent: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "AddChannelEvent: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -654,14 +654,14 @@ func (repo *ChannelRepository) GetChannelEventsAfter(appID string, channelID str
 	stmt, err := repo.dbHolder.db.Prepare(selectEventsSinceTimeStampSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetChannelEventsAfter: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelEventsAfter: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(appID, channelID, timestamp)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetChannelEventsAfter: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelEventsAfter: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -673,7 +673,7 @@ func (repo *ChannelRepository) GetChannelEventsAfter(appID string, channelID str
 		event, err := repo.rowToChannelEvent(channelID, rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetChannelEventsAfter: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetChannelEventsAfter: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -688,14 +688,14 @@ func (repo *ChannelRepository) GetChannelEventsAfterAndBefore(appID string, chan
 	stmt, err := repo.dbHolder.db.Prepare(selectEventsBetweenTimeStampsSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetChannelEventsAfterAndBefore: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelEventsAfterAndBefore: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(channelID, appID, timestampAfter, timestampBefore)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetChannelEventsAfterAndBefore: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelEventsAfterAndBefore: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -707,7 +707,7 @@ func (repo *ChannelRepository) GetChannelEventsAfterAndBefore(appID string, chan
 		event, err := repo.rowToChannelEvent(channelID, rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetChannelEventsAfterAndBefore: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetChannelEventsAfterAndBefore: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -722,7 +722,7 @@ func (repo *ChannelRepository) GetChannelLastEventsAfter(appID string, channelID
 	stmt, err := repo.dbHolder.db.Prepare(selectLastEventsSinceTimeStampSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetChannelLastEventsAfter: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelLastEventsAfter: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 

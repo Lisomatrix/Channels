@@ -1,11 +1,11 @@
 package connection
 
 import (
+	"github.com/lisomatrix/channels/channels/auth"
+	"github.com/lisomatrix/channels/channels/core"
 	"log"
 	"net/http"
 
-	"github.com/Channels/Channels/auth"
-	"github.com/Channels/Channels/core"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 

@@ -3,11 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/auth"
+	"github.com/lisomatrix/channels/channels/core"
 	"net/http"
 	"os"
 
-	"github.com/Channels/Channels/auth"
-	"github.com/Channels/Channels/core"
 	"github.com/gin-gonic/gin"
 )
 

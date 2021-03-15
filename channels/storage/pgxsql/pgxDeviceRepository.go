@@ -4,9 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"os"
-
-	"github.com/Channels/Channels/core"
 )
 
 // Device SQL
@@ -37,7 +36,7 @@ func (repo *PGXDeviceRepository) GetDevice(id string) (*core.Device, error) {
 	}
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetDevice: query scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetDevice: query scan failed: %v\n", err)
 		return nil, err
 	}
 
@@ -53,7 +52,7 @@ func (repo *PGXDeviceRepository) GetClientDeviceTokens(clientID string) ([]strin
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectClientDeviceTokensSQL, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -67,7 +66,7 @@ func (repo *PGXDeviceRepository) GetClientDeviceTokens(clientID string) ([]strin
 		devices = append(devices, token)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: row scan failed: %v\n", err)
 			return nil, err
 		}
 	}
@@ -80,7 +79,7 @@ func (repo *PGXDeviceRepository) GetClientDevices(clientID string) ([]*core.Devi
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectClientDevicesSQL, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientDevices: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientDevices: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -95,7 +94,7 @@ func (repo *PGXDeviceRepository) GetClientDevices(clientID string) ([]*core.Devi
 		devices = append(devices, &core.Device{ID: id, Token: token, ClientID: clientID})
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetClientDevices: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetClientDevices: row scan failed: %v\n", err)
 			return nil, err
 		}
 	}
@@ -108,7 +107,7 @@ func (repo *PGXDeviceRepository) DeleteClientDevices(clientID string) error {
 	_, err := repo.dbHolder.db.Exec(repo.ctx, deleteClientDevicesSQL, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteClientDevices: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteClientDevices: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -120,7 +119,7 @@ func (repo *PGXDeviceRepository) DeleteDevice(id string) error {
 	_, err := repo.dbHolder.db.Exec(repo.ctx, deleteDeviceSQL, id)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteDevice: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteDevice: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -132,7 +131,7 @@ func (repo *PGXDeviceRepository) CreateDevice(id string, token string, clientID 
 	_, err := repo.dbHolder.db.Exec(repo.ctx, createDeviceSQL, id, token, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "CreateDevice: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "CreateDevice: statement execution failed: %v\n", err)
 		return err
 	}
 

@@ -2,9 +2,9 @@ package storage
 
 import (
 	"encoding/json"
+	"github.com/lisomatrix/channels/channels/core"
 	"log"
 
-	"github.com/Channels/Channels/core"
 	lediscfg "github.com/ledisdb/ledisdb/config"
 	ledis "github.com/ledisdb/ledisdb/ledis"
 )

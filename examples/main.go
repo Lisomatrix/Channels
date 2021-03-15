@@ -1,13 +1,11 @@
 package main
 
 import (
+	"log"
+
 	"github.com/lisomatrix/channels/channels"
 	"github.com/lisomatrix/channels/channels/auth"
 	"github.com/lisomatrix/channels/channels/storage/pgxsql"
-	"log"
-	_ "net/http/pprof"
-
-
 )
 
 func main() {

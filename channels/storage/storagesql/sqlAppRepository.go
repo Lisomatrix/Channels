@@ -2,10 +2,8 @@ package storagesql
 
 import (
 	"fmt"
-	"log"
+	"github.com/lisomatrix/channels/channels/core"
 	"os"
-
-	"github.com/Channels/Channels/core"
 )
 
 // App SQL
@@ -25,14 +23,14 @@ func (storage *AppRepository) CreateApp(id string, name string) error {
 	stmt, err := storage.dbHolder.db.Prepare(createAppSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "CreateApp: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "CreateApp: preparing statement failed: %v\n", err)
 		return err
 	}
 
 	_, err = stmt.Exec(id, name)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "CreateApp: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "CreateApp: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -46,14 +44,14 @@ func (storage *AppRepository) DeleteApp(id string) error {
 	stmt, err := storage.dbHolder.db.Prepare(deleteAppSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteApp: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteApp: preparing statement failed: %v\n", err)
 		return err
 	}
 
 	_, err = stmt.Exec(id)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteApp: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteApp: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -67,14 +65,14 @@ func (storage *AppRepository) GetApps() ([]*core.App, error) {
 	stmt, err := storage.dbHolder.db.Prepare(getAppsSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetApps: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetApps: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetApps: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetApps: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -106,14 +104,14 @@ func (storage *AppRepository) UpdateApp(id string, name string) error {
 	stmt, err := storage.dbHolder.db.Prepare(updateAppSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "UpdateApp: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "UpdateApp: preparing statement failed: %v\n", err)
 		return err
 	}
 
 	_, err = stmt.Exec(name, id)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "UpdateApp: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "UpdateApp: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -127,7 +125,7 @@ func (storage *AppRepository) AppExists(id string) (bool, error) {
 	stmt, err := storage.dbHolder.db.Prepare(appExistsSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "AppExists: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "AppExists: preparing statement failed: %v\n", err)
 		return false, err
 	}
 
@@ -140,7 +138,7 @@ func (storage *AppRepository) AppExists(id string) (bool, error) {
 	err = row.Scan(&exists)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "AppExists: query scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "AppExists: query scan failed: %v\n", err)
 		return false, err
 	}
 
@@ -150,39 +148,4 @@ func (storage *AppRepository) AppExists(id string) (bool, error) {
 // NewSQLAppRepository - Create a new instance of SQLAppRepository
 func NewSQLAppRepository(db *DatabaseStorage) *AppRepository {
 	return &AppRepository{dbHolder: db}
-}
-
-// TestAppTableStorage - Tests all App table related functions
-func TestAppTableStorage(storage *AppRepository) {
-	if err := storage.CreateApp("321", "loja_2"); err != nil {
-		log.Println("Create App:")
-		log.Println(err)
-	}
-
-	if exists, err := storage.AppExists("321"); err != nil {
-		log.Println("EXISTS:")
-		log.Println(err)
-	} else if exists {
-		log.Println("App 321 exists!")
-	} else {
-		log.Println("App 321 does not exists")
-	}
-
-	if apps, err := storage.GetApps(); err != nil {
-		log.Println("GET APPS")
-	} else {
-		log.Println(apps)
-	}
-
-	if err := storage.UpdateApp("321", "loja_dois"); err != nil {
-		log.Println("UPDATE APP")
-		log.Println(err)
-	}
-
-	if err := storage.DeleteApp("321"); err != nil {
-		log.Println("APP DELETE")
-		log.Println(err)
-	} else {
-		log.Println("APP DELETED")
-	}
 }

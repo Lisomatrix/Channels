@@ -3,10 +3,10 @@ package pgxsql
 import (
 	"context"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"os"
 	"strings"
 
-	"github.com/Channels/Channels/core"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -57,7 +57,7 @@ func (repo *PGXChannelRepository) GetChannelClients(appID string, channelID stri
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectChannelClients, channelID, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetChannelClients: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelClients: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -69,7 +69,7 @@ func (repo *PGXChannelRepository) GetChannelClients(appID string, channelID stri
 		err = rows.Scan(&channelID)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetChannelClients: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetChannelClients: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -84,7 +84,7 @@ func (repo *PGXChannelRepository) CreateChannel(id string, appID string, name st
 	_, err := repo.dbHolder.db.Exec(repo.ctx, createChannelSQL, id, appID, name, createdAt, isClosed, extra, persistent, private, presence)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "CreateChannel: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "CreateChannel: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -97,7 +97,7 @@ func (repo *PGXChannelRepository) DeleteChannel(appID string, id string) error {
 	_, err := repo.dbHolder.db.Exec(repo.ctx, deleteChannelSQL, id, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteChannel: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteChannel: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -109,7 +109,7 @@ func (repo *PGXChannelRepository) DeleteAppChannels(appID string) error {
 	_, err := repo.dbHolder.db.Exec(repo.ctx, deleteAppChannelsSQL, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteAppChannels: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteAppChannels: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -125,11 +125,11 @@ func (repo *PGXChannelRepository) JoinClient(appID string, channelID string, cli
 		// We are already expecting this error
 		// This way we can avoid query
 		if !strings.Contains(err.Error(), "duplicate key value") {
-			fmt.Fprintf(os.Stderr, "JoinChannel: statement execution failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "JoinChannel: statement execution failed: %v\n", err)
 			return err
 		}
 
-		fmt.Fprintf(os.Stderr, "JoinChannel WARN: attempted to insert duplicate value: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "JoinChannel WARN: attempted to insert duplicate value: %v\n", err)
 	}
 
 	return nil
@@ -140,7 +140,7 @@ func (repo *PGXChannelRepository) LeaveClient(appID string, channelID string, cl
 	_, err := repo.dbHolder.db.Exec(repo.ctx, leaveChannelSQL, channelID, clientID, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "LeaveChannel: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "LeaveChannel: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -152,7 +152,7 @@ func (repo *PGXChannelRepository) SetChannelCloseStatus(appID string, channelID 
 	_, err := repo.dbHolder.db.Exec(repo.ctx, setCloseStatusSQL, isClosed, channelID, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "SetChannelCloseStatus: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "SetChannelCloseStatus: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -164,7 +164,7 @@ func (repo *PGXChannelRepository) GetClientAllowedChannels(clientID string) ([]s
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectClientAllowedChannelsSQL, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientAllowedChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientAllowedChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -176,7 +176,7 @@ func (repo *PGXChannelRepository) GetClientAllowedChannels(clientID string) ([]s
 		err = rows.Scan(&channelID)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetClientAllowedChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetClientAllowedChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -191,7 +191,7 @@ func (repo *PGXChannelRepository) GetClientPublicChannels(clientID string) ([]*c
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectClientOpenOrPrivateChannels, false, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientPublicChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientPublicChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -201,7 +201,7 @@ func (repo *PGXChannelRepository) GetClientPublicChannels(clientID string) ([]*c
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetClientPublicChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetClientPublicChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -216,7 +216,7 @@ func (repo *PGXChannelRepository) GetClientPrivateChannels(clientID string) ([]*
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectClientOpenOrPrivateChannels, true, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientPrivateChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientPrivateChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -226,7 +226,7 @@ func (repo *PGXChannelRepository) GetClientPrivateChannels(clientID string) ([]*
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetClientPrivateChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetClientPrivateChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -241,7 +241,7 @@ func (repo *PGXChannelRepository) GetAllPrivateChannels() ([]*core.Channel, erro
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectAllOpenOrPrivateChannels, true)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllPrivateChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllPrivateChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -251,7 +251,7 @@ func (repo *PGXChannelRepository) GetAllPrivateChannels() ([]*core.Channel, erro
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAllPrivateChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAllPrivateChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -266,7 +266,7 @@ func (repo *PGXChannelRepository) GetAllPublicChannels() ([]*core.Channel, error
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectAllOpenOrPrivateChannels, false)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllPublicChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllPublicChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -276,7 +276,7 @@ func (repo *PGXChannelRepository) GetAllPublicChannels() ([]*core.Channel, error
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAllPublicChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAllPublicChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -291,7 +291,7 @@ func (repo *PGXChannelRepository) GetAppPrivateChannels(appID string) ([]*core.C
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectOpenOrPrivateAppChannels, true, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppPrivateChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppPrivateChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -301,7 +301,7 @@ func (repo *PGXChannelRepository) GetAppPrivateChannels(appID string) ([]*core.C
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAppPrivateChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAppPrivateChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -316,7 +316,7 @@ func (repo *PGXChannelRepository) GetAppPublicChannels(appID string) ([]*core.Ch
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectOpenOrPrivateAppChannels, false, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppPublicChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppPublicChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -326,7 +326,7 @@ func (repo *PGXChannelRepository) GetAppPublicChannels(appID string) ([]*core.Ch
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAppPublicChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAppPublicChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -349,7 +349,7 @@ func (repo *PGXChannelRepository) GetAppChannel(appID string, channelID string) 
 			return nil, nil
 		}
 
-		fmt.Fprintf(os.Stderr, "GetAppChannel: row scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppChannel: row scan failed: %v\n", err)
 		return nil, err
 	}
 
@@ -361,7 +361,7 @@ func (repo *PGXChannelRepository) GetAppChannels(appID string) ([]*core.Channel,
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectAppChannels, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -371,7 +371,7 @@ func (repo *PGXChannelRepository) GetAppChannels(appID string) ([]*core.Channel,
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAppChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAppChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -390,7 +390,7 @@ func (repo *PGXChannelRepository) ExistsAppChannel(appID string, channelID strin
 	err := row.Scan(&amount)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ExistsAppChannel: row scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "ExistsAppChannel: row scan failed: %v\n", err)
 		return false, err
 	}
 
@@ -406,7 +406,7 @@ func (repo *PGXChannelRepository) GetAppChannelsCount(appID string) (uint64, err
 	err := row.Scan(&amount)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppChannelsCount: row scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppChannelsCount: row scan failed: %v\n", err)
 		return 0, err
 	}
 
@@ -418,7 +418,7 @@ func (repo *PGXChannelRepository) GetAllChannels() ([]*core.Channel, error) {
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectAllChannels)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllChannels: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllChannels: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -428,7 +428,7 @@ func (repo *PGXChannelRepository) GetAllChannels() ([]*core.Channel, error) {
 		chann, err := repo.rowToChannel(rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAllChannels: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAllChannels: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -447,7 +447,7 @@ func (repo *PGXChannelRepository) GetAllChannelsCount() (uint64, error) {
 	err := row.Scan(&amount)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllChannelsCount: row scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllChannelsCount: row scan failed: %v\n", err)
 		return 0, err
 	}
 
@@ -460,7 +460,7 @@ func (repo *PGXChannelRepository) AddChannelEvent(appID string, channelID string
 	_, err := repo.dbHolder.db.Exec(repo.ctx, addChannelEventSQL, event.SenderID, event.EventType, event.Payload, channelID, event.Timestamp, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "AddChannelEvent: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "AddChannelEvent: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -479,7 +479,7 @@ func (repo *PGXChannelRepository) AddChannelEvents(items []core.InsertItem) erro
 	conn, err := repo.dbHolder.db.Acquire(repo.ctx)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "AddChannelEvents: failed to acquire connection: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "AddChannelEvents: failed to acquire connection: %v\n", err)
 		return err
 	}
 
@@ -491,7 +491,7 @@ func (repo *PGXChannelRepository) AddChannelEvents(items []core.InsertItem) erro
 	conn.Release()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "AddChannelEvents: batch execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "AddChannelEvents: batch execution failed: %v\n", err)
 		return err
 	}
 
@@ -503,7 +503,7 @@ func (repo *PGXChannelRepository) GetChannelEventsAfter(appID string, channelID 
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectEventsSinceTimeStampSQL, appID, channelID, timestamp)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetChannelEventsAfter: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelEventsAfter: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -513,7 +513,7 @@ func (repo *PGXChannelRepository) GetChannelEventsAfter(appID string, channelID 
 		event, err := repo.rowToChannelEvent(channelID, rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetChannelEventsAfter: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetChannelEventsAfter: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -528,7 +528,7 @@ func (repo *PGXChannelRepository) GetChannelEventsAfterAndBefore(appID string, c
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectEventsBetweenTimeStampsSQL, channelID, appID, timestampAfter, timestampBefore)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetChannelEventsAfterAndBefore: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelEventsAfterAndBefore: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -538,7 +538,7 @@ func (repo *PGXChannelRepository) GetChannelEventsAfterAndBefore(appID string, c
 		event, err := repo.rowToChannelEvent(channelID, rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetChannelEventsAfterAndBefore: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetChannelEventsAfterAndBefore: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -553,7 +553,7 @@ func (repo *PGXChannelRepository) GetChannelLastEventsAfter(appID string, channe
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectLastEventsSinceTimeStampSQL, channelID, appID, timestamp, amount)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetChannelLastEventsAfter: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelLastEventsAfter: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -563,7 +563,7 @@ func (repo *PGXChannelRepository) GetChannelLastEventsAfter(appID string, channe
 		event, err := repo.rowToChannelEvent(channelID, rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetChannelLastEventsAfter: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetChannelLastEventsAfter: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -578,7 +578,7 @@ func (repo *PGXChannelRepository) GetChannelLastEvents(appID string, channelID s
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectLastEventsSQL, channelID, appID, amount)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetChannelLastEvents: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelLastEvents: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -588,7 +588,7 @@ func (repo *PGXChannelRepository) GetChannelLastEvents(appID string, channelID s
 		event, err := repo.rowToChannelEvent(channelID, rows)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetChannelLastEvents: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetChannelLastEvents: row scan failed: %v\n", err)
 			return nil, err
 		}
 
@@ -600,14 +600,12 @@ func (repo *PGXChannelRepository) GetChannelLastEvents(appID string, channelID s
 
 // rowToChannelEvent - Small helper to keep code cleaner
 func (repo *PGXChannelRepository) rowToChannelEvent(channelID string, rows pgx.Rows) (*core.ChannelEvent, error) {
-	//var id string
+
 	var senderID string
 	var eventType string
 	var payload string
-	//var channelID string
 	var timestamp int64
 
-	//err := rows.Scan(&id, &senderID, &eventType, &payload, &channelID, &timestamp)
 	err := rows.Scan(&senderID, &eventType, &payload, &timestamp)
 
 	channEvent := &core.ChannelEvent{
@@ -617,16 +615,6 @@ func (repo *PGXChannelRepository) rowToChannelEvent(channelID string, rows pgx.R
 		ChannelID: channelID,
 		Timestamp: timestamp,
 	}
-
-	/*
-		channEvent := &core.ChannelEvent{
-			ID:        id,
-			SenderID:  senderID,
-			EventType: eventType,
-			Payload:   payload,
-			ChannelID: channelID,
-			Timestamp: timestamp,
-		}*/
 
 	return channEvent, err
 }
