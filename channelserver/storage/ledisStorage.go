@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/channelserver/channelserver/core"
 	lediscfg "github.com/ledisdb/ledisdb/config"
 	ledis "github.com/ledisdb/ledisdb/ledis"
-	"lisomatrix.pt/channelserver/channelserver/core"
 )
 
 // LedisStorage - Storage implementation with ledis

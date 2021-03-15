@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"lisomatrix.pt/channelserver/channelserver/core"
+	"github.com/channelserver/channelserver/core"
 )
 
 // Client SQL

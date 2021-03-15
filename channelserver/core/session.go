@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/channelserver/channelserver/auth"
 	"github.com/rs/xid"
-	"lisomatrix.pt/channelserver/channelserver/auth"
 )
 
 // RemoveIndex - Helper to remove index from slice

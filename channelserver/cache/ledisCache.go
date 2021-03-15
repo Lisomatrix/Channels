@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/channelserver/channelserver/core"
 	lediscfg "github.com/ledisdb/ledisdb/config"
 	ledis "github.com/ledisdb/ledisdb/ledis"
 	"google.golang.org/protobuf/proto"
-	"lisomatrix.pt/channelserver/channelserver/core"
 )
 
 // LedisCacheStorage - Cache implementation in Ledis

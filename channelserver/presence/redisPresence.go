@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/channelserver/channelserver/core"
 	"github.com/go-redis/redis/v8"
-	"lisomatrix.pt/channelserver/channelserver/core"
 )
 
 // RedisPresence - Redis implementation of PresenceHandler

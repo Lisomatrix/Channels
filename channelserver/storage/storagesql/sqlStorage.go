@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/channelserver/channelserver/core"
 	_ "github.com/jackc/pgx/v4/stdlib" // PostgreSQL Driver
-	"lisomatrix.pt/channelserver/channelserver/core"
 )
 
 // DatabaseStorage - DatabaseStorage implementation using SQL Database

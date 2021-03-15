@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/channelserver/channelserver/auth"
+	"github.com/channelserver/channelserver/core"
 	"github.com/gin-gonic/gin"
-	"lisomatrix.pt/channelserver/channelserver/auth"
-	"lisomatrix.pt/channelserver/channelserver/core"
 )
 
 type lastDeviceStatusResponse struct {

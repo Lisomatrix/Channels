@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/channelserver/channelserver/auth"
 	"github.com/gin-gonic/gin"
-	"lisomatrix.pt/channelserver/channelserver/auth"
 )
 
 type createAppRequest struct {

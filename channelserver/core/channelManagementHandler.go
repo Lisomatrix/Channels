@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/channelserver/channelserver/auth"
 	"github.com/gin-gonic/gin"
-	"lisomatrix.pt/channelserver/channelserver/auth"
 )
 
 type getChannelMessagesRequest struct {

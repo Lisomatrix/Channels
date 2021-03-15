@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"lisomatrix.pt/channelserver/channelserver/core"
+	"github.com/channelserver/channelserver/core"
 )
 
 // App SQL

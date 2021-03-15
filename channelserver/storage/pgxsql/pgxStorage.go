@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/channelserver/channelserver/core"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"lisomatrix.pt/channelserver/channelserver/core"
 )
 
 var user = ""

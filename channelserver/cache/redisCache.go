@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/channelserver/channelserver/core"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/proto"
-	"lisomatrix.pt/channelserver/channelserver/core"
 )
 
 // RedisCacheStorage - Cache implementation in Redis

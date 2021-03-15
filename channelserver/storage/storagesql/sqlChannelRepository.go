@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"lisomatrix.pt/channelserver/channelserver/core"
+	"github.com/channelserver/channelserver/core"
 )
 
 // Channel SQL

@@ -6,16 +6,16 @@ import (
 
 	"os"
 
+	"github.com/channelserver/channelserver/cache"
+	"github.com/channelserver/channelserver/connection"
+	"github.com/channelserver/channelserver/handlers"
+	"github.com/channelserver/channelserver/presence"
+	"github.com/channelserver/channelserver/publisher"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
-	"lisomatrix.pt/channelserver/channelserver/cache"
-	"lisomatrix.pt/channelserver/channelserver/connection"
-	"lisomatrix.pt/channelserver/channelserver/handlers"
-	"lisomatrix.pt/channelserver/channelserver/presence"
-	"lisomatrix.pt/channelserver/channelserver/publisher"
 
-	"lisomatrix.pt/channelserver/channelserver/core"
-	"lisomatrix.pt/channelserver/channelserver/storage/pgxsql"
+	"github.com/channelserver/channelserver/core"
+	"github.com/channelserver/channelserver/storage/pgxsql"
 )
 
 func corsMiddleware() gin.HandlerFunc {

@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/channelserver/channelserver/auth"
+	"github.com/channelserver/channelserver/core"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"lisomatrix.pt/channelserver/channelserver/auth"
-	"lisomatrix.pt/channelserver/channelserver/core"
 
 	ws "github.com/gobwas/ws"
 )

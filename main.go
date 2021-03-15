@@ -4,9 +4,9 @@ import (
 	"log"
 	_ "net/http/pprof"
 
-	"lisomatrix.pt/channelserver/channelserver"
-	"lisomatrix.pt/channelserver/channelserver/auth"
-	"lisomatrix.pt/channelserver/channelserver/storage/pgxsql"
+	"github.com/channelserver/channelserver"
+	"github.com/channelserver/channelserver/auth"
+	"github.com/channelserver/channelserver/storage/pgxsql"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 	// 	log.Println(http.ListenAndServe("localhost:6060", nil))
 	// }()
 
-	config, err := NewConfig("./config.yaml")
+	config, err := channelserver.NewConfig("./config.yaml")
 
 	if err != nil {
 		log.Fatal(err)

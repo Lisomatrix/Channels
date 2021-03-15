@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/channelserver/channelserver/core"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
-	"lisomatrix.pt/channelserver/channelserver/core"
 )
 
 // RedisPublisher - Implementation of PublishHandler interface

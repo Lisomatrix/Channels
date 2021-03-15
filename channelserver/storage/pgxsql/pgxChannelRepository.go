@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/channelserver/channelserver/core"
 	"github.com/jackc/pgx/v4"
-	"lisomatrix.pt/channelserver/channelserver/core"
 )
 
 // Channel SQL
