@@ -1,4 +1,4 @@
-module github.com/channelserver
+module github.com/Channels
 
 go 1.16
 

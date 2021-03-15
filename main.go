@@ -4,9 +4,9 @@ import (
 	"log"
 	_ "net/http/pprof"
 
-	"github.com/channelserver/channelserver"
-	"github.com/channelserver/channelserver/auth"
-	"github.com/channelserver/channelserver/storage/pgxsql"
+	"github.com/Channels/Channels"
+	"github.com/Channels/Channels/auth"
+	"github.com/Channels/Channels/storage/pgxsql"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 	// 	log.Println(http.ListenAndServe("localhost:6060", nil))
 	// }()
 
-	config, err := channelserver.NewConfig("./config.yaml")
+	config, err := Channels.NewConfig("./config.yaml")
 
 	if err != nil {
 		log.Fatal(err)
@@ -24,6 +24,6 @@ func main() {
 	auth.SetSecret(config.JWTSecret)
 	pgxsql.PGXSetConnectionParams(config.Database.User, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.DB)
 
-	channelserver.Start(config.Server.Host, config.Server.Port)
+	Channels.Start(config.Server.Host, config.Server.Port)
 
 }
