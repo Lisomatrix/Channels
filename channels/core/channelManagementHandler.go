@@ -3,12 +3,12 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/auth"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/Channels/Channels/auth"
 	"github.com/gin-gonic/gin"
 )
 
@@ -136,7 +136,7 @@ func PostEventHandler(context *gin.Context) {
 	}
 
 	// If no hub exists then we don't have clients from this hub
-	hub := GetEngine().HubsHandler.ConstainsHub(appID)
+	hub := GetEngine().HubsHandler.ContainsHub(appID)
 
 	if hub == nil {
 		writer.WriteHeader(http.StatusOK)

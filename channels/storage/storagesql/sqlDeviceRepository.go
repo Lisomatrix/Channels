@@ -3,9 +3,9 @@ package storagesql
 import (
 	"database/sql"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"os"
 
-	"github.com/Channels/Channels/core"
 )
 
 // Device SQL

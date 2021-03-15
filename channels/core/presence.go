@@ -1,37 +1,11 @@
 package core
 
-// // InitialPresenceStatus - Represents current presence status of a channel
-// type InitialPresenceStatus struct {
-// 	ChannelID    string           `json:"channelID"`
-// 	ClientStatus map[string]int64 `json:"clientStatus"`
-// }
-
 // LastDevicePresence - Represents last client device heart beat
 type LastDevicePresence struct {
 	ClientID  string `json:"clientID"`
 	DeviceID  string `json:"deviceID"`
 	Timestamp int64  `json:"timestamp"`
 }
-
-// // ClientJoin - Event for user joining channel
-// type ClientJoin struct {
-// 	ChannelID string `json:"channelID"`
-// 	ClientID  string `json:"clientID"`
-// }
-
-// // ClientLeave - Event for user leaving channel
-// type ClientLeave struct {
-// 	ChannelID string `json:"channelID"`
-// 	ClientID  string `json:"clientID"`
-// }
-
-// // OnlineStatusUpdate - Event for user subscribing/unsubscribing channel
-// type OnlineStatusUpdate struct {
-// 	ChannelID string `json:"channelID"`
-// 	ClientID  string `json:"clientID"`
-// 	Status    bool   `json:"status"`
-// 	TimeStamp int64  `json:"timestamp"`
-// }
 
 // PresenceHandler - Handle client online status
 type PresenceHandler interface {

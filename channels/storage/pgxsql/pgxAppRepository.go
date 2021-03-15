@@ -3,9 +3,9 @@ package pgxsql
 import (
 	"context"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"os"
 
-	"github.com/Channels/Channels/core"
 )
 
 // App SQL
@@ -38,7 +38,7 @@ func (storage *PGXAppRepository) DeleteApp(id string) error {
 	_, err := storage.dbHolder.db.Exec(storage.ctx, deleteAppSQL, id)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteApp: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteApp: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -50,7 +50,7 @@ func (storage *PGXAppRepository) GetApps() ([]*core.App, error) {
 	rows, err := storage.dbHolder.db.Query(storage.ctx, getAppsSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetApps: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetApps: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -65,7 +65,7 @@ func (storage *PGXAppRepository) GetApps() ([]*core.App, error) {
 		apps = append(apps, &core.App{AppID: appID, Name: name})
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetApps: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetApps: row scan failed: %v\n", err)
 			return nil, err
 		}
 	}
@@ -78,7 +78,7 @@ func (storage *PGXAppRepository) UpdateApp(id string, name string) error {
 	_, err := storage.dbHolder.db.Exec(storage.ctx, updateAppSQL, name, id)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "UpdateApp: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "UpdateApp: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -94,7 +94,7 @@ func (storage *PGXAppRepository) AppExists(id string) (bool, error) {
 	err := row.Scan(&exists)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "AppExists: query scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "AppExists: query scan failed: %v\n", err)
 		return false, err
 	}
 

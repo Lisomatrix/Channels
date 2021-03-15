@@ -117,7 +117,7 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 	GetEngine().GetCacheStorage().AddClientChannel(clientID, channelID)
 
 	// Notify current connected clients
-	hub := GetEngine().HubsHandler.ConstainsHub(appID)
+	hub := GetEngine().HubsHandler.ContainsHub(appID)
 
 	if hub != nil {
 		hub.AddChannelToClient(clientID, channelID)
@@ -196,7 +196,7 @@ func LeaveChannel(appID string, channelID string, clientID string) (bool, error)
 	GetEngine().GetCacheStorage().RemoveClientChannel(clientID, channelID)
 
 	// Notify current connected clients
-	hub := GetEngine().HubsHandler.ConstainsHub(appID)
+	hub := GetEngine().HubsHandler.ContainsHub(appID)
 
 	if hub != nil {
 		hub.RemoveChannelFromClient(clientID, channelID)

@@ -2,16 +2,6 @@ package connection
 
 import "github.com/gorilla/websocket"
 
-/*
-// Connection - Interface for connections
-type Connection interface {
-	//Init(ws *websocket.Conn)
-	Send([]byte)
-	SetOnMessage(func([]byte))
-	SetOnClose(func())
-	Close()
-}*/
-
 // SSEConnection - Implementation of the Connection interface for Server Sent Event clients
 type SSEConnection struct {
 	messageSendChannel chan []byte

@@ -3,9 +3,8 @@ package pgxsql
 import (
 	"context"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"os"
-
-	"github.com/Channels/Channels/core"
 )
 
 // Client SQL
@@ -64,7 +63,7 @@ func (repo *PGXClientRepository) GetAppClient(AppID string, ClientID string) (*c
 	}
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppClient: row scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppClient: row scan failed: %v\n", err)
 		return nil, err
 	}
 
@@ -76,7 +75,7 @@ func (repo *PGXClientRepository) CreateClient(id string, username string, appID 
 	_, err := repo.dbHolder.db.Exec(repo.ctx, createClientSQL, id, username, appID, extra)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "CreateClient: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "CreateClient: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -92,7 +91,7 @@ func (repo *PGXClientRepository) GetClientExtra(id string) (string, error) {
 	err := row.Scan(&extra)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientExtra: query scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientExtra: query scan failed: %v\n", err)
 		return "", err
 	}
 
@@ -104,7 +103,7 @@ func (repo *PGXClientRepository) DeleteClient(id string) error {
 	_, err := repo.dbHolder.db.Exec(repo.ctx, deleteClientByIDSQL, id)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteClient: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteClient: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -116,7 +115,7 @@ func (repo *PGXClientRepository) DeleteAppClients(appID string) error {
 	_, err := repo.dbHolder.db.Exec(repo.ctx, deleteClientByAppIDSQL, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteAppClients: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteAppClients: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -128,7 +127,7 @@ func (repo *PGXClientRepository) UpdateClient(id string, username string, extra 
 	_, err := repo.dbHolder.db.Exec(repo.ctx, updateClientSQL, username, extra, id)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "UpdateClient: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "UpdateClient: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -140,7 +139,7 @@ func (repo *PGXClientRepository) UpdateClientUsername(id string, username string
 	_, err := repo.dbHolder.db.Exec(repo.ctx, updateClientUsernameSQL, username, id)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "UpdateClientUsername: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "UpdateClientUsername: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -152,7 +151,7 @@ func (repo *PGXClientRepository) UpdateClientExtra(id string, extra string) erro
 	_, err := repo.dbHolder.db.Exec(repo.ctx, updateClientUsernameSQL, extra, id)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "UpdateClientExtra: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "UpdateClientExtra: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -164,7 +163,7 @@ func (repo *PGXClientRepository) GetAppClients(appID string) ([]*core.Client, er
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectAppClientsSQL, appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppClients: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppClients: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -186,7 +185,7 @@ func (repo *PGXClientRepository) GetAppClients(appID string) ([]*core.Client, er
 		})
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAppClients: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAppClients: row scan failed: %v\n", err)
 			return nil, err
 		}
 	}
@@ -203,7 +202,7 @@ func (repo *PGXClientRepository) GetAppClientsCount(appID string) (uint64, error
 	err := row.Scan(&amount)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppClients: row scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppClients: row scan failed: %v\n", err)
 		return 0, err
 	}
 
@@ -215,7 +214,7 @@ func (repo *PGXClientRepository) GetAllClients() ([]*core.Client, error) {
 	rows, err := repo.dbHolder.db.Query(repo.ctx, selectAllClientsSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppClients: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppClients: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -237,7 +236,7 @@ func (repo *PGXClientRepository) GetAllClients() ([]*core.Client, error) {
 		})
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetAppClients: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetAppClients: row scan failed: %v\n", err)
 			return nil, err
 		}
 	}
@@ -249,12 +248,17 @@ func (repo *PGXClientRepository) GetAllClients() ([]*core.Client, error) {
 func (repo *PGXClientRepository) GetAllClientsCount() (uint64, error) {
 	row, err := repo.dbHolder.db.Query(repo.ctx, selectAllClientsAmountSQL)
 
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllClients: query failed: %v\n", err)
+		return 0, err
+	}
+
 	var amount uint64
 
 	err = row.Scan(&amount)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAllClients: row scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAllClients: row scan failed: %v\n", err)
 		return 0, err
 	}
 

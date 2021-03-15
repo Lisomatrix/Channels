@@ -7,8 +7,8 @@ type HubsHandler struct {
 	hubs sync.Map // map[string]*Hub
 }
 
-// ConstainsHub - Return hub if exists
-func (handler *HubsHandler) ConstainsHub(AppID string) *Hub {
+// ContainsHub - Return hub if exists
+func (handler *HubsHandler) ContainsHub(AppID string) *Hub {
 	data, isOK := handler.hubs.Load(AppID)
 
 	if isOK {

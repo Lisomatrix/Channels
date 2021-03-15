@@ -3,9 +3,9 @@ package storagesql
 import (
 	"database/sql"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"log"
 
-	"github.com/Channels/Channels/core"
 	_ "github.com/jackc/pgx/v4/stdlib" // PostgreSQL Driver
 )
 

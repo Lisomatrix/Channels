@@ -3,11 +3,11 @@ package publisher
 import (
 	"context"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"log"
 	"os"
 	"strings"
 
-	"github.com/Channels/Channels/core"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
 )
@@ -37,14 +37,14 @@ func (publisher *RedisPublisher) PublishChannelOnlineChange(appID string, channe
 	data, err := newEvent.Marshal()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Publisher: failed to marshal event %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed to marshal event %v\n", err)
 		return
 	}
 
 	cmd := publisher.client.Publish(publisher.ctx, appID+":"+channelID, data)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Publisher: failed to publish event %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed to publish event %v\n", err)
 		return
 	}
 }
@@ -68,7 +68,7 @@ func (publisher *RedisPublisher) PublishChannelEvent(appID string, channelID str
 	data, err := newEvent.Marshal()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Publisher: failed to marshal event %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed to marshal event %v\n", err)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (publisher *RedisPublisher) PublishChannelEvent(appID string, channelID str
 	cmd := publisher.client.Publish(publisher.ctx, appID+":"+channelID, data)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Publisher: failed to publish event %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed to publish event %v\n", err)
 		return
 	}
 }
@@ -87,7 +87,7 @@ func (publisher *RedisPublisher) Subscribe(appID string, channelID string) {
 	err := publisher.pubsub.Subscribe(publisher.ctx, appID+":"+channelID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Publisher: failed get subscribe to channel %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed get subscribe to channel %v\n", err)
 	}
 }
 
@@ -109,7 +109,7 @@ func (publisher *RedisPublisher) handleSubscribeMessages() {
 		err := newEvent.Unmarshal([]byte(data.Payload))
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Redis Publisher: failed umarshal external event %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed umarshal external event %v\n", err)
 			continue
 		}
 
@@ -118,14 +118,14 @@ func (publisher *RedisPublisher) handleSubscribeMessages() {
 			continue
 		}
 
-		fmt.Fprintf(os.Stderr, "Redis Publisher: received event with size: %d bytes\n", len([]byte(data.Payload)))
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: received event with size: %d bytes\n", len([]byte(data.Payload)))
 
 		parts := strings.Split(data.Channel, ":")
 
 		appID := parts[0]
 		channelID := parts[1]
 
-		hub := core.GetEngine().HubsHandler.ConstainsHub(appID)
+		hub := core.GetEngine().HubsHandler.ContainsHub(appID)
 
 		// If there is no hub then we don't have clients from the hub
 		if hub == nil {
@@ -162,7 +162,7 @@ func (publisher *RedisPublisher) handleSubscribeMessages() {
 			})
 
 		} else {
-			fmt.Fprintf(os.Stderr, "Redis Publisher: received Unknown event type \n")
+			_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: received Unknown event type \n")
 		}
 
 	}

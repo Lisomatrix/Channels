@@ -3,12 +3,12 @@ package presence
 import (
 	"context"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/Channels/Channels/core"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -44,7 +44,7 @@ func (presence *RedisPresence) GetChannelClientsPresence(appID string, channelID
 		timestamp, err := strconv.ParseInt(timestampStr, 10, 64)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "RedisPresence: failed to convert timestamp %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "RedisPresence: failed to convert timestamp %v\n", err)
 		}
 
 		if val, ok := lastClientPresences[clientID]; ok {

@@ -3,11 +3,11 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/auth"
 	"net/http"
 	"os"
 	"strconv"
 
-	"github.com/Channels/Channels/auth"
 	"github.com/gin-gonic/gin"
 )
 

@@ -2,9 +2,10 @@ package cache
 
 import (
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"os"
 
-	"github.com/Channels/Channels/core"
+
 	lediscfg "github.com/ledisdb/ledisdb/config"
 	ledis "github.com/ledisdb/ledisdb/ledis"
 	"google.golang.org/protobuf/proto"

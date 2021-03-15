@@ -3,11 +3,11 @@ package cache
 import (
 	"context"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/Channels/Channels/core"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/proto"
 )

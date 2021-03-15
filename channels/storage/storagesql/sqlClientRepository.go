@@ -2,9 +2,9 @@ package storagesql
 
 import (
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"os"
 
-	"github.com/Channels/Channels/core"
 )
 
 // Client SQL

@@ -1,21 +1,21 @@
-package Channels
+package channels
 
 import (
 	"fmt"
+	"github.com/lisomatrix/channels/channels/cache"
+	"github.com/lisomatrix/channels/channels/connection"
+	"github.com/lisomatrix/channels/channels/core"
+	"github.com/lisomatrix/channels/channels/handlers"
+	"github.com/lisomatrix/channels/channels/presence"
+	"github.com/lisomatrix/channels/channels/publisher"
+	"github.com/lisomatrix/channels/channels/storage/pgxsql"
 	"log"
 
 	"os"
 
-	"github.com/Channels/Channels/cache"
-	"github.com/Channels/Channels/connection"
-	"github.com/Channels/Channels/handlers"
-	"github.com/Channels/Channels/presence"
-	"github.com/Channels/Channels/publisher"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 
-	"github.com/Channels/Channels/core"
-	"github.com/Channels/Channels/storage/pgxsql"
 )
 
 func corsMiddleware() gin.HandlerFunc {

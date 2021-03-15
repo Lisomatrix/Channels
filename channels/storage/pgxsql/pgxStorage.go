@@ -3,10 +3,10 @@ package pgxsql
 import (
 	"context"
 	"fmt"
+	"github.com/lisomatrix/channels/channels/core"
 	"log"
 	"os"
 
-	"github.com/Channels/Channels/core"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -17,7 +17,7 @@ var password = ""
 var dbName = ""
 
 var dataSourceName = fmt.Sprintf("host=%s port=%s user=%s "+
-	"password=%s dbname=%s sslmode=enabled", host, port, user, password, dbName)
+	"password=%s dbname=%s sslmode=prefer", host, port, user, password, dbName)
 
 // PGXDatabaseStorage - DatabaseStorage implementation with postgres driver
 type PGXDatabaseStorage struct {
@@ -37,7 +37,7 @@ func PGXSetConnectionParams(dbUser string, dbPassword string, dbHost string, dbP
 	dbName = db
 
 	dataSourceName = fmt.Sprintf("host=%s port=%s user=%s "+
-		"password=%s dbname=%s sslmode=enabled", host, port, user, password, dbName)
+		"password=%s dbname=%s sslmode=prefer", host, port, user, password, dbName)
 }
 
 // GetAppRepository - Get SQL implementation of AppRepository

@@ -92,21 +92,6 @@ func (handler *RedisHandler) GetUsersOnlineStatus(clientIDs []string) map[string
 
 			lastHeartBeat = time.Unix(parsedTimestamp, 0)
 
-			// if lastHeartBeat == nil {
-			// 	onlineResults[clientIDsSlice[index]] = "unknown"
-			// 	continue
-			// }
-
-			//err := lastHeartBeat.UnmarshalBinary(timeStampBin.([]byte))
-
-			// if err != nil {
-			// 	log.Println(err)
-			// 	//onlineResults[clientIDsSlice[index]] = false
-			// 	onlineResults[clientIDsSlice[index]] = "unknown"
-
-			// 	continue
-			// }
-
 			// If passed more than 2 minutes since last heart beat then we consider it offline
 
 			onlineResults[clientIDsSlice[index]] = lastHeartBeat.UTC().Format(javascriptISOString)

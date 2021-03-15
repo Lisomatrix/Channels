@@ -128,7 +128,7 @@ func (connection *OWebSocketConnection) writeMessages() {
 				}
 
 				// If we can't send a ping then it probably is closed
-				//wsutil.WriteServerMessage(connection.ws, ws.OpPing, []byte{})
+				_ = wsutil.WriteServerMessage(connection.ws, ws.OpPing, []byte{})
 			}
 
 		}

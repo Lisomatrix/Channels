@@ -2,11 +2,11 @@ package core
 
 import (
 	"fmt"
+	"github.com/lisomatrix/channels/channels/auth"
 	"log"
 	"os"
 	"time"
 
-	"github.com/Channels/Channels/auth"
 	"github.com/rs/xid"
 )
 
@@ -67,7 +67,7 @@ func (session *Session) Init(connection Connection, deviceID string, identity *a
 	// Device
 	session.deviceID = deviceID
 
-	// Channels
+	// channels
 	session.SubscribedChannels = make([]*HubChannel, 0)
 	session.AllowedChannels = channelIds
 	//session.SubscribedChannels = make([]string, 0)
