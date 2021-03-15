@@ -10,19 +10,20 @@ import (
 
 func main() {
 
-	// go func() {
-	// 	log.Println(http.ListenAndServe("localhost:6060", nil))
-	// }()
-
+	// Make sure the config.yaml is at the same path as the binary
 	config, err := channels.NewConfig("./config.yaml")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Since the components are pluggable, you must initialize them before
+	// In this case we are using the default ones, so just set their properties
+
+	// The InitEngineAndStart function initializes the engine and binds routes
 	auth.SetSecret(config.JWTSecret)
 	pgxsql.PGXSetConnectionParams(config.Database.User, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.DB)
 
-	channels.Start(config.Server.Host, config.Server.Port)
-
+	// Initializes the engine and starts
+	channels.InitEngineAndStart("0.0.0.0", "8090")
 }

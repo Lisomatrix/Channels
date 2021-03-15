@@ -2,6 +2,7 @@ package channels
 
 import (
 	"fmt"
+	"github.com/gin-contrib/gzip"
 	"github.com/lisomatrix/channels/channels/cache"
 	"github.com/lisomatrix/channels/channels/connection"
 	"github.com/lisomatrix/channels/channels/core"
@@ -10,12 +11,9 @@ import (
 	"github.com/lisomatrix/channels/channels/publisher"
 	"github.com/lisomatrix/channels/channels/storage/pgxsql"
 	"log"
-
 	"os"
 
-	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
-
 )
 
 func corsMiddleware() gin.HandlerFunc {
@@ -36,21 +34,8 @@ func corsMiddleware() gin.HandlerFunc {
 	}
 }
 
-// Start channel server
+// Start channel server, make sure you configured the Engine first
 func Start(host string, port string) {
-	fmt.Printf("Process ID: %v \n", os.Getpid())
-
-	// TODO: Explore message batching
-	// TODO: For example, when a client send a message he waits for a reply confirmation, during this time we can chunck messages
-
-	// TODO: Create Device HTTP handler
-
-	// TODO: FCM implementation
-
-	//dbStorage := storagesql.NewSQLStorageDatabase()
-	dbStorage := pgxsql.NewSQLStorageDatabase()
-	core.InitEngine(dbStorage, cache.NewRedisCacheStorage(), publisher.NewRedisPublisher(), presence.NewRedisPresence())
-
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.Default()
@@ -105,4 +90,19 @@ func Start(host string, port string) {
 
 	log.Println("Running on host " + host + " port: " + port)
 	log.Fatal(router.Run(host + ":" + port))
+}
+
+// InitEngineAndStart channel server
+func InitEngineAndStart(host string, port string) {
+	fmt.Printf("Process ID: %v \n", os.Getpid())
+
+	// TODO: Explore message batching
+
+	// TODO: Create Device HTTP handler
+
+	// TODO: FCM implementation
+
+	dbStorage := pgxsql.NewSQLStorageDatabase()
+	core.InitEngine(dbStorage, cache.NewRedisCacheStorage(), publisher.NewRedisPublisher(), presence.NewRedisPresence())
+	Start(host, port)
 }

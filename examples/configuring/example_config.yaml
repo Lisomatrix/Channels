@@ -1,0 +1,12 @@
+jwt: your_secret
+
+server:
+  host: 0.0.0.0
+  port: 8090
+
+database:
+  user: your_user
+  host: your_host
+  port: your_port
+  password: your_password
+  db: your_db
