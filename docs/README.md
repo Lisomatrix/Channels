@@ -51,7 +51,7 @@ ___
 
 The file [app.go](https://github.com/Lisomatrix/Channels/blob/main/channelserver/app.go) provides a function **Start(host string, port string)** that starts the Channel Servers with the default settings, currently the default settings are **PostgreSQL** for storage and the rest is using **Redis**, these can be changed!
 
-Before starting we must provide the connection settings to PostgreSQL, we can do that by providing an [config.yaml](https://github.com/Lisomatrix/Channels/blob/main/example_config.yaml), and the SQL Schema [here](www.example.com).
+Before starting we must provide the connection settings to PostgreSQL, we can do that by providing an [config.yaml](https://github.com/Lisomatrix/Channels/blob/main/example_config.yaml), and the SQL Schema [here](https://github.com/Lisomatrix/Channels/blob/main/sql/channels_sql_db.sql).
 
 After that make sure you have your redis running locally and the server should start!
 
