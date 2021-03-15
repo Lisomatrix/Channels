@@ -1,12 +1,13 @@
 package main
 
 import (
+	"github.com/lisomatrix/channels/channels"
+	"github.com/lisomatrix/channels/channels/auth"
+	"github.com/lisomatrix/channels/channels/storage/pgxsql"
 	"log"
 	_ "net/http/pprof"
 
-	"github.com/Channels/Channels"
-	"github.com/Channels/Channels/auth"
-	"github.com/Channels/Channels/storage/pgxsql"
+
 )
 
 func main() {
@@ -15,7 +16,7 @@ func main() {
 	// 	log.Println(http.ListenAndServe("localhost:6060", nil))
 	// }()
 
-	config, err := Channels.NewConfig("./config.yaml")
+	config, err := channels.NewConfig("./config.yaml")
 
 	if err != nil {
 		log.Fatal(err)
@@ -24,6 +25,6 @@ func main() {
 	auth.SetSecret(config.JWTSecret)
 	pgxsql.PGXSetConnectionParams(config.Database.User, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.DB)
 
-	Channels.Start(config.Server.Host, config.Server.Port)
+	channels.Start(config.Server.Host, config.Server.Port)
 
 }

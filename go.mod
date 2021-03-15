@@ -1,4 +1,4 @@
-module github.com/Channels
+module github.com/lisomatrix/channels
 
 go 1.16
 
