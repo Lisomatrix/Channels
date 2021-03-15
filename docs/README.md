@@ -647,7 +647,7 @@ ___
 
 ## Get Last Events Between
 
-In order get events between two timestamps from a channel we just send a `GET` to `/sync/{channelID}/{sinceTimestamp}/to/{upToTimestamp}`, the results are inclusive!.
+In order get events between two timestamps from a channel we just send a `GET` to `/sync/{channelID}/{sinceTimestamp}/to/{upToTimestamp}`, the results are inclusive!
 
 > You should expect similar performance to the previous request
 
@@ -704,3 +704,332 @@ Another question you might have is, what happens if **Redis** goes down? Well, s
 And what happens if we lose access to database? In that case I'm sorry, but for now your events won't be stored, if we stored them in memory the server could go down pretty fast with lack of memory.
 
 > Event if both things fail, **Channels** should not crash, but won't have the desired results either.
+
+___
+
+# Android SDK
+
+If you want to connect to **channels** with your devices, then this is the right place for you!<br>
+First get the code from [here](https://github.com/Lisomatrix/ChannelsSDK_Android) and check the authentication section for creating a `JWT Token`.<br>
+
+After getting the token, initialize the SDK with:
+
+```java
+ChannelsSDK.initialize(context, "wss://server_url:port","AppID", "your_jwt_Token");
+```
+
+This should connect to the server if both ulr and credentials are right.
+
+
+___
+
+## Getting your channels
+
+To get the client channels you can retrieve the channels that are public or the ones that are private. To do that just use the following:
+
+```java
+ChannelsSDK
+        .getInstance()
+        .getChannelService()
+        .getPublicChannels(new GetChannelsCallback() { // For Private just replace the word public
+            @Override
+            public void onSuccess(List<ChannelInfo> channelInfos) {
+                // Here you get your channels information
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                // In case an error happens
+            }
+        });
+```
+
+With the `ChannelInfo` you can get a `Channel`, with the static method `Channel.fromChannelInfo(ChannelInfo)`;<br>
+We will see what you can do with it in a second.
+
+___
+
+## Listening for new channels and removed channels
+
+You can know you when lost access to a channel for received with:
+
+```java
+ChannelsSDK.setChannelsListener(new ChannelsListener() {
+            @Override
+            public void onChannelRemoved(String channelID) {
+                // When your remove a client from a channel
+            }
+
+            @Override
+            public void onChannelAdded(String channelID) {
+                // When you add a channel to a client
+            }
+        });
+```
+
+___
+
+## Working with a Channel
+
+The object `Channel` is the object you will use the most, with it you can subscribe, publish, get other clients presence and get events.<br>
+
+First, in order to get a instance you can use the `ChannelInfo` you get from `getPublicChannels()` or `getPrivateChannels()` with `Channel.fromChannelInfo(ChannelInfo)`, or after you get the public or private channels you can get one with `ChannelsSDK.getChannel("channelID");`, **if none is found it will return null!**
+
+!> Please don't try to create an instance out of the ways we provide, but in case you do register it with `ChannelsHandler.getInstance().registerChannel(channel);` or you won't receive any updates.
+
+Once you have a `Channel` you subscribe with:
+
+```java
+    m_channel.subscribe(new ChannelListener() {
+            @Override
+            public void onPublishAcknowledge(RequestAcknowledge requestAcknowledge) {
+                // When you publick with ACK enabled
+            }
+
+            @Override
+            public void onSubscribed() {
+                // Callback so you know when you are subscribed
+            }
+
+            @Override
+            public void onChannelEvent(ChannelEvent event) {
+                // When your receive a message
+            }
+
+            @Override
+            public void onRemoved() {
+                // When you lost access to a channel
+            }
+        });
+```
+
+
+For a `channel` with presence enabled you have another callback, a long one!
+
+```java
+m_channel.setPresenceListener(new ChannelPresenceListener() {
+            @Override
+            public void onClientJoinChannel(ClientJoin clientJoin) {
+                // When a user is added to a channel
+            }
+
+            @Override
+            public void onClientLeaveChannel(ClientLeave clientLeave) {
+                // When a user is removed from a channel
+            }
+
+            @Override
+            public void onOnlineStatusUpdate(OnlineStatusUpdate onlineStatusUpdate) {
+                
+                // You receive an event when a client goes online or offline
+                // And you can get the all the presence information with:
+                Map<String, ClientPresenceStatus> presenceStatusMap = m_channel.getPresences();
+                // The key in the map is the ClientID
+            }
+
+            @Override
+            public void onInitialStatusUpdate() {
+               
+               // After you subscribe to a channel, the channel should send it's
+               // Current presence state to you
+               // When you get it, this 'little' call is called and here you can get presences with:
+               Map<String, ClientPresenceStatus> presenceStatusMap = m_channel.getPresences();
+            }
+
+
+});
+```
+
+> You should this set this listener before subscribing but you still can get the presence status with the `.getPresences()`.
+
+___
+
+## Publishing
+
+To publish messages is simple as:
+
+```java
+m_channel.publish("event_type", "any_payload", true);
+/* Set to true when you want to get a confirmation */
+```
+
+!> **Important:** If your event doesn't request a confirmation, `Channels` will consider that the event is not important to store on channels with persistence enabled!
+
+___
+
+## Getting last events
+
+For getting events it's as simple as:
+
+> You can check other types of getting events on the section **Synchronization**
+
+```java
+    ChannelsSDK.getChannelLastEvents("channelID", 20 /* Amount */, new GetChannelEventsCallback() {
+            @Override
+            public void onSuccess(List<ChannelEvent> events) {
+                
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+
+            }
+    });
+
+    or 
+
+    m_channel.getLastEvents(10 /* Amount */, new GetChannelEventsCallback() {
+            @Override
+            public void onSuccess(List<ChannelEvent> events) {
+                
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+
+            }
+    });
+```
+
+# JavaScript SDK
+
+If you want to connect to **channels** with your browser, then this is the right place for you!<br>
+First get the code from [here](https://github.com/Lisomatrix/ChannelsSDK_JS) and check the authentication section for creating a `JWT Token`.<br>
+
+After getting the token, initialize the SDK with:
+
+```javascript
+let channelsSDK = new ChannelsSDK({ 
+    url: '://url:port', // Don't fill behind the ://
+    appID: 'AppID',
+    token: 'JWT Token',
+    secure: false // If should be WSS or WS and HTTPS or HTTP
+});
+```
+> You need to keep the object around and using for almost everything
+___
+
+## Getting your channels
+
+To get the client channels you can retrieve the channels that are public or the ones that are private. To do that just use the following:
+
+> The package works in browser, it uses the native WebSocket, if you can replace it, then it can work on Node
+
+```javascript
+channelsSDK.fetchPublicChannels().then(channels => { // Replace public with private for private channels
+});
+```
+
+## Listening for new channels and removed channels
+
+You can know you when lost access to a channel for received with:
+
+```javascript
+channelsSDK.setOnChannelAdded((channelID) => {
+    // When you receive access to a channel
+})
+
+channelsSDK.setOnChannelRemoved((channelID) => {
+    // When you lose access to a channel
+})
+```
+
+___
+
+## Working with a Channel
+
+The object `Channel` is the object you will use the most, with it you can subscribe, publish, get other clients presence and get events.<br>
+
+First, in order to get a instance you can get from `getPublicChannels()` or `getPrivateChannels()` or after you get the public or private channels you can get one with `channelsSDK.getChannel("channelID");`, **if none is found it will return null!**
+
+Once you have a `Channel` you subscribe with:
+
+```javascript
+channel.subscribe(() => {
+    // Callback for when the subscribe is confirmed
+})
+```
+
+And you can get events with:
+
+```javascript
+channel.setOnMessage((event) => {
+    // Callback for the event
+});
+```
+
+For presences events you have:
+
+```
+// On initial status from the channel
+channel.setOnInitialStatusUpdate(() => {
+    // You can get the presence with
+    channel.getPresencesStatus();
+});
+
+// When status changes
+channel.setOnOnlineStatusUpdate((statusUpdate) => {
+    // The user status that changed
+});
+
+// When a user is added to the channel
+channel.setOnJoin((join) => {
+
+});
+
+// When a user is removed from the channel
+channel.setOnLeave((leave) => {
+
+});
+```
+
+___
+
+## Publishing
+
+To publish messages is simple as:
+
+```javascript
+
+    channel.publish("my_event", "my_payload_can_be_json", () => {
+        // Published confirmation
+    });
+
+    // If you don't want the confirmation or don't want the event to be stored pass null on the callback
+    channel.publish("my_event", "my_payload_can_be_json", null);
+
+```
+
+!> **Important:** If your event doesn't request a confirmation, `Channels` will consider that the event is not important to store on channels with persistence enabled!
+
+___
+
+## Getting last events
+
+For getting events it's as simple as:
+
+> You can check other types of getting events on the section **Synchronization**
+
+```javascript
+
+// Get last X (5 in this case) events 
+channel.fetchLastEvents(5).then(events => {
+    console.log(events);
+});
+
+// Get X (5 in this case) since given timestamp (inclusive)
+channel.fetchLastEventsSince(5, 1615570823).then(events => {
+    console.log(events);
+});
+
+// Get events since timestamp (inclusive)
+channel.fetchEventsSince(1615570823).then(events => {
+    console.log(events);
+});
+
+// Since timestamp to Up to timestamp (inclusive)
+channel.fetchEventsBetween(1615570823, 1615570823).then(events => {
+    console.log(events);
+});
+
+```

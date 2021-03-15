@@ -143,7 +143,7 @@ ___
 
 ## Get Last Events Between
 
-In order get events between two timestamps from a channel we just send a `GET` to `/sync/{channelID}/{sinceTimestamp}/to/{upToTimestamp}`, the results are inclusive!.
+In order get events between two timestamps from a channel we just send a `GET` to `/sync/{channelID}/{sinceTimestamp}/to/{upToTimestamp}`, the results are inclusive!
 
 > You should expect similar performance to the previous request
 
