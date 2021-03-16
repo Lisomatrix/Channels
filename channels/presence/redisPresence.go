@@ -1,13 +1,15 @@
+// This package holds the presence interface implementations
 package presence
 
 import (
 	"context"
 	"fmt"
-	"github.com/lisomatrix/channels/channels/core"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/lisomatrix/channels/channels/core"
 
 	"github.com/go-redis/redis/v8"
 )

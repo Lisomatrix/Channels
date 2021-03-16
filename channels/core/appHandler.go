@@ -1,12 +1,14 @@
+// This package hold all the delivery logic, connection tracking and pub sub
 package core
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/lisomatrix/channels/channels/auth"
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	"github.com/lisomatrix/channels/channels/auth"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,7 +1,13 @@
+// It provides some functions to start the channels parts
+// The first option is you configure and start the engine and we bind the http routes
+// The second we you configure the default parts and we start the engine and bind routes
 package channels
 
 import (
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/gin-contrib/gzip"
 	"github.com/lisomatrix/channels/channels/cache"
 	"github.com/lisomatrix/channels/channels/connection"
@@ -10,8 +16,6 @@ import (
 	"github.com/lisomatrix/channels/channels/presence"
 	"github.com/lisomatrix/channels/channels/publisher"
 	"github.com/lisomatrix/channels/channels/storage/pgxsql"
-	"log"
-	"os"
 
 	"github.com/gin-gonic/gin"
 )

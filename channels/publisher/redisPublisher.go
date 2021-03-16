@@ -1,12 +1,14 @@
+// This package holds the publisher interface implementations
 package publisher
 
 import (
 	"context"
 	"fmt"
-	"github.com/lisomatrix/channels/channels/core"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/lisomatrix/channels/channels/core"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"

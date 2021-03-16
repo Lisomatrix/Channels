@@ -1,3 +1,4 @@
+// This package holds the connection interface implementations to be used by project
 package connection
 
 import (

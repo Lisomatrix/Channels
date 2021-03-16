@@ -1,10 +1,12 @@
+// This package holds a default implementation of the storage interface
 package storagesql
 
 import (
 	"database/sql"
 	"fmt"
-	"github.com/lisomatrix/channels/channels/core"
 	"log"
+
+	"github.com/lisomatrix/channels/channels/core"
 
 	_ "github.com/jackc/pgx/v4/stdlib" // PostgreSQL Driver
 )

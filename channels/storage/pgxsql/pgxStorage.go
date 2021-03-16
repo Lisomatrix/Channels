@@ -1,11 +1,13 @@
+// This package holds the PGX driver implementation of the storage interface
 package pgxsql
 
 import (
 	"context"
 	"fmt"
-	"github.com/lisomatrix/channels/channels/core"
 	"log"
 	"os"
+
+	"github.com/lisomatrix/channels/channels/core"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
