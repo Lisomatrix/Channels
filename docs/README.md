@@ -1,3 +1,64 @@
+# Quick Start
+
+Create your go project.
+
+Get the package:
+```
+go get github.com/lisomatrix/channels/channels
+```
+
+Paste this code in you main file
+
+```GO
+package main
+
+import (
+	"log"
+
+	"github.com/lisomatrix/channels/channels"
+	"github.com/lisomatrix/channels/channels/auth"
+	"github.com/lisomatrix/channels/channels/storage/pgxsql"
+)
+
+func main() {
+
+	// Make sure the config.yaml is at the same path as the binary
+	config, err := channels.NewConfig("./config.yaml")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Since the components are pluggable, you must initialize them before
+	// In this case we are using the default ones, so just set their properties
+
+	// The InitEngineAndStart function initializes the engine and binds routes
+	auth.SetSecret(config.JWTSecret)
+	pgxsql.PGXSetConnectionParams(config.Database.User, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.DB)
+
+	// Initializes the engine and starts
+	channels.InitEngineAndStart("0.0.0.0", "8090")
+}
+```
+
+Copy this [file](https://github.com/Lisomatrix/Channels/blob/main/examples/simple/example_config.yaml) and put it in the same place as the binary, fill your postgres connection fields. It has redis as cache and presence but it will still work fine even if you don't have it installed.
+
+Now create the schema in this [sql file](https://github.com/Lisomatrix/Channels/blob/main/sql/channels_sql_db.sql).
+
+Go to [JWT.IO](https://jwt.io) and paste the json below on payload a fill the same secret as in config.yaml.
+
+```json
+{
+  "Role": "Admin",
+  "ClientID": "123",
+  "AppID": "123"
+}
+```
+
+Copy the token and you can start working with **Channels**.
+
+Learn on to create and app, client and channels in the [docs](https://lisomatrix.github.io/Channels)
+
 # Channels
 
 > A simple server that treats communication like channels
