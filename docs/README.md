@@ -1,3 +1,5 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/Lisomatrix/Channels.svg)](https://pkg.go.dev/github.com/lisomatrix/channels)
+
 # Quick Start
 
 Create your go project.
