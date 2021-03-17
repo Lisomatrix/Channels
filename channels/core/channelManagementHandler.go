@@ -95,16 +95,14 @@ func PostEventHandler(context *gin.Context) {
 
 	// Check existence from cache
 	channel := GetEngine().GetCacheStorage().GetChannel(appID, channelID)
-	//exists := GetEngine().GetCacheStorage().CheckChannelExistence(appID, channelID)
 
 	// If it doesn't exist
 	// Check it from the database
 	if channel == nil /*!exists*/ {
 		channel, err = GetEngine().GetChannelRepository().GetAppChannel(appID, channelID)
-		//exists, err := GetEngine().GetChannelRepository().ExistsAppChannel(appID, channelID)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "HTTP Publish Channel; failed to get app channel %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "HTTP Publish Channel; failed to get app channel %v\n", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -270,7 +268,7 @@ func PostJoinChannel(context *gin.Context) {
 		writer.WriteHeader(http.StatusNotFound)
 	}
 
-	writer.WriteHeader(http.StatusOK)
+
 }
 
 // PostLeaveChannel - Remove user from channel

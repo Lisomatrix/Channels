@@ -107,6 +107,7 @@ func InitEngine(dbStorage DatabaseStorage, cacheStorage CacheStorage, publisher 
 		}
 
 		go startInsertingQueue(&engine.insertQueue, dbStorage.GetChannelRepository())
+		go startInsertingQueue(&engine.insertQueue, dbStorage.GetChannelRepository())
 		index++
 	}
 }
@@ -115,7 +116,7 @@ const (
 	CacheLimit   = 50 // Amount of insert before batching
 	CacheTimeout = 5 * time.Second
 )
-
+/*
 func startInsertingQueue(queue *StorageInsertQueue, repo ChannelRepository) {
 
 	cache := make([]InsertItem, 0, CacheLimit)
@@ -154,24 +155,24 @@ func startInsertingQueue(queue *StorageInsertQueue, repo ChannelRepository) {
 			cache = cache[:0]
 		}
 	}
+}*/
+
+ func startInsertingQueue(queue *StorageInsertQueue, repo ChannelRepository) {
+
+ 	for {
+ 		select {
+ 		case item, isActive := <-queue.insertChannel:
+ 			{
+
+ 				if !isActive {
+ 					return
+ 				}
+
+ 				if err := repo.AddChannelEvent(item.AppID, item.Event.ChannelID, item.Event); err != nil {
+ 					log.Printf("error: %v", err)
+ 				}
+
+ 			}
+ 		}
+ 	}
 }
-
-// func startInsertingQueue(queue *StorageInsertQueue, repo ChannelRepository) {
-
-// 	for {
-// 		select {
-// 		case item, isActive := <-queue.insertChannel:
-// 			{
-
-// 				if !isActive {
-// 					return
-// 				}
-
-// 				if err := repo.AddChannelEvent(item.appID, item.event.ChannelID, item.event); err != nil {
-// 					log.Printf("error: %v", err)
-// 				}
-
-// 			}
-// 		}
-// 	}
-// }

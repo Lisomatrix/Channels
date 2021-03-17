@@ -186,18 +186,6 @@ func (cache *RedisCacheStorage) RemoveDevice(clientID string, id string) {
 
 // AddDevice - Add device to user list
 func (cache *RedisCacheStorage) AddDevice(clientID string, device *core.Device) {
-	/*
-		cacheDevice := &CachedDevice{
-			Id:    device.ID,
-			Token: device.Token,
-		}
-
-		data, err := proto.Marshal(cacheDevice)
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Redis Cache: failed to marshal device %v\n", err)
-		}*/
-
 	cmd := cache.db.HSet(cache.ctx, clientID+":device", device.ID, device.Token)
 
 	if cmd.Err() != nil {
@@ -273,26 +261,8 @@ func (cache *RedisCacheStorage) RemoveChannel(appID string, channelID string) {
 
 // StoreClient - Cache client
 func (cache *RedisCacheStorage) StoreClient(appID string, clientID string, client *core.Client) {
-	// cachedClient := CachedClient{
-	// 	Username: client.Username,
-	// 	Extra:    client.Extra,
-	// }
 
-	// data, err := proto.Marshal(&cachedClient)
-
-	// if err != nil {
-	// 	fmt.Fprintf(os.Stderr, "Redis Cache: marshal cache %v\n", err)
-	// 	return
-	// }
-
-	// err = cache.db.Set([]byte(appID+":client:"+clientID), data)
-
-	// if err != nil {
-	// 	fmt.Fprintf(os.Stderr, "Redis Cache: failed to store client %v\n", err)
-	// 	return
-	// }
-
-	// Lunch a gorotine to reduce latency
+	// Lunch a goroutine to reduce latency
 	go func() {
 		err := cache.db.HMSet(cache.ctx, appID+":client:"+clientID, "username", client.Username, "extra", client.Extra)
 
@@ -317,22 +287,6 @@ func (cache *RedisCacheStorage) CheckClientExistence(appID string, clientID stri
 
 // GetClient - Attempt to get client from cache
 func (cache *RedisCacheStorage) GetClient(appID string, clientID string) *core.Client {
-	// data, err := cache.db.Get([]byte(appID + ":client:" + clientID))
-
-	// if err != nil {
-	// 	fmt.Fprintf(os.Stderr, "Redis Cache: failed to retrieve client %v\n", err)
-	// 	return nil
-	// }
-
-	// var cachedClient CachedClient
-
-	// err = proto.Unmarshal(data, &cachedClient)
-
-	// if err != nil {
-	// 	fmt.Fprintf(os.Stderr, "Redis Cache: failed to umarshal cached client %v\n", err)
-	// 	return nil
-	// }
-
 	cmd := cache.db.HMGet(cache.ctx, appID+":client:"+clientID, "username", "extra")
 
 	dData, err := cmd.Result()
@@ -362,13 +316,6 @@ func (cache *RedisCacheStorage) GetClient(appID string, clientID string) *core.C
 		Username: cachedClient.Username,
 		Extra:    cachedClient.Extra,
 	}
-
-	// return &core.Client{
-	// 	ID:       clientID,
-	// 	AppID:    appID,
-	// 	Username: cachedClient.Username,
-	// 	Extra:    cachedClient.Extra,
-	// }
 }
 
 // StoreApp - Set app in cache
@@ -405,7 +352,7 @@ func (cache *RedisCacheStorage) GetApp(appID string) *core.App {
 // StoreChannel - Store channel in cache
 func (cache *RedisCacheStorage) StoreChannel(appID string, channelID string, channel *core.Channel) {
 
-	// Lunch a gorotine to reduce latency
+	// Lunch a goroutine to reduce latency
 	go func() {
 		cachedChannel := CachedChannel{
 			Name:       channel.Name,
