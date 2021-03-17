@@ -1,10 +1,12 @@
+// This package provides some extra http handlers
 package handlers
 
 import (
 	"encoding/json"
-	"github.com/lisomatrix/channels/channels/auth"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/lisomatrix/channels/channels/auth"
 
 	"github.com/gin-gonic/gin"
 )

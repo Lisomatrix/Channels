@@ -1,12 +1,14 @@
+// This package holds the implementations for the project cache interface
 package cache
 
 import (
 	"context"
 	"fmt"
-	"github.com/lisomatrix/channels/channels/core"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/lisomatrix/channels/channels/core"
 
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/proto"

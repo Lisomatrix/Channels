@@ -1,15 +1,20 @@
+// Provides the structs and function to verify and extract a token
+// and check if the token can use the resources he wants
 package auth
 
 import "net/http"
 
-// SuperAdminRole - Super Admin Role
-var SuperAdminRole = "SuperAdmin"
+// All available roles
+const (
+	// SuperAdminRole - Super Admin Role
+	SuperAdminRole = "SuperAdmin"
 
-// AdminRole - Admin Role
-var AdminRole = "Admin"
+	// AdminRole - Admin Role
+	AdminRole = "Admin"
 
-// ClientRole - Client Role
-var ClientRole = "Client"
+	// ClientRole - Client Role
+	ClientRole = "Client"
+)
 
 // Identity - Data in JWT token
 type Identity struct {
