@@ -8,6 +8,7 @@ import (
 
 	//_ "github.com/jackc/pgx/v4/stdlib" // PostgreSQL Driver
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/lisomatrix/channels/channels/core"
 )
 
 // DatabaseStorage - DatabaseStorage implementation using SQL Database

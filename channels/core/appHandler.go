@@ -136,7 +136,7 @@ func DeleteApp(context *gin.Context) {
 	err := GetEngine().GetAppRepository().DeleteApp(appID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Delete App: failed to delete app %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Delete App: failed to delete app %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -265,7 +265,7 @@ func GetApps(context *gin.Context) {
 	apps, err := GetEngine().GetAppRepository().GetApps()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get Apps: failed to get apps %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get Apps: failed to get apps %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -282,11 +282,11 @@ func GetApps(context *gin.Context) {
 	data, err := json.Marshal(response)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get Apps: failed to marshal response %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get Apps: failed to marshal response %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	writer.WriteHeader(http.StatusOK)
-	writer.Write(data)
+	_, _ = writer.Write(data)
 }

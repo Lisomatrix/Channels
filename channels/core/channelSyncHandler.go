@@ -219,7 +219,7 @@ func GetLastMessagesSinceTimeStamp(context *gin.Context) {
 	amount, err := strconv.ParseInt(amountStr, 10, 64)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed convert amount %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed convert amount %v\n", err)
 	}
 
 	lastTimeStampStr := context.Params.ByName("lastTimeStamp")
@@ -232,14 +232,14 @@ func GetLastMessagesSinceTimeStamp(context *gin.Context) {
 	lastTimeStamp, err := strconv.ParseInt(lastTimeStampStr, 10, 64)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed convert timestamp %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed convert timestamp %v\n", err)
 	}
 
 	// Check if channel exists
 	exists, err := GetEngine().GetChannelRepository().ExistsAppChannel(appID, channelID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed to check app channel existence %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed to check app channel existence %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -252,7 +252,7 @@ func GetLastMessagesSinceTimeStamp(context *gin.Context) {
 	events, err := GetEngine().GetChannelRepository().GetChannelLastEventsAfter(appID, channelID, amount, lastTimeStamp)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed fetch events %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed fetch events %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -263,7 +263,7 @@ func GetLastMessagesSinceTimeStamp(context *gin.Context) {
 	data, err := json.Marshal(response)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed to marshal response %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed to marshal response %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -312,7 +312,7 @@ func GetLastMessages(context *gin.Context) {
 	amount, err := strconv.ParseInt(amountStr, 10, 64)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get last messages: failed convert amount %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages: failed convert amount %v\n", err)
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -321,7 +321,7 @@ func GetLastMessages(context *gin.Context) {
 	exists, err := GetEngine().GetChannelRepository().ExistsAppChannel(appID, channelID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get last messages: failed to check app channel existence %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages: failed to check app channel existence %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -342,7 +342,7 @@ func GetLastMessages(context *gin.Context) {
 			events, err = GetEngine().GetChannelRepository().GetChannelLastEvents(appID, channelID, amount)
 
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "HTTP Get last messages: failed fetch events %v\n", err)
+				_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages: failed fetch events %v\n", err)
 				writer.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -353,7 +353,7 @@ func GetLastMessages(context *gin.Context) {
 		events, err = GetEngine().GetChannelRepository().GetChannelLastEvents(appID, channelID, amount)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "HTTP Get last messages: failed fetch events %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages: failed fetch events %v\n", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -365,7 +365,7 @@ func GetLastMessages(context *gin.Context) {
 	data, err := json.Marshal(response)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get last messages: failed to marshal response %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages: failed to marshal response %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}

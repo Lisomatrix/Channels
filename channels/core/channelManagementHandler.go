@@ -260,7 +260,7 @@ func PostJoinChannel(context *gin.Context) {
 	}
 
 	if isOK, err := JoinChannel(appID, channelID, clientID); err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Join channel: failed to join client %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Join channel: failed to join client %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 	} else if isOK {
 		writer.WriteHeader(http.StatusOK)
