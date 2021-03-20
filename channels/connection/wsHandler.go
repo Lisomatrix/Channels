@@ -135,6 +135,15 @@ func OptimizedRequestHandler(context *gin.Context) {
 		return
 	}
 
+	// Start session handler
+	var connection *OWebSocketConnection = new(OWebSocketConnection)
+	var session *core.Session = new(core.Session)
+
+	hub := core.GetEngine().HubsHandler.GetHub(identity.AppID)
+
+
+	session.Init(connection, deviceID, &identity, identity.ClientID, hub)
+
 	// Upgrade to WebSocket
 	conn, _, _, err := ws.UpgradeHTTP(request, writer)
 
@@ -143,14 +152,7 @@ func OptimizedRequestHandler(context *gin.Context) {
 		return
 	}
 
-	// Start session handler
-	var connection *OWebSocketConnection = new(OWebSocketConnection)
-	var session *core.Session = new(core.Session)
-
-	hub := core.GetEngine().HubsHandler.GetHub(identity.AppID)
-
 	connection.Init(conn)
-	session.Init(connection, deviceID, &identity, identity.ClientID, hub)
 
 	hub.AddClient(session)
 }

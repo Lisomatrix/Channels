@@ -98,7 +98,7 @@ func (hub *Hub) Close() {
 // AddChannel - Add channel to hub
 func (hub *Hub) AddChannel(id string) {
 
-	chann := NewChannel(id, hub.AppID)
+	chann := NewChannel(id, hub.AppID, hub)
 
 	if chann == nil {
 		return
@@ -130,7 +130,7 @@ func (hub *Hub) Publish(channelID string, channelEvent *ChannelEvent, shouldStor
 	if !isOk {
 
 		// Load channel
-		chann = NewChannel(channelID, hub.AppID)
+		chann = NewChannel(channelID, hub.AppID, hub)
 
 		// If not found cancel publish
 		if chann == nil {
@@ -161,7 +161,7 @@ func (hub *Hub) Subscribe(channelID string, session *Session) *HubChannel {
 	if isOK {
 		chann = data.(*HubChannel)
 	} else {
-		chann = NewChannel(channelID, hub.AppID)
+		chann = NewChannel(channelID, hub.AppID, hub)
 
 		// If is nil then there are no channels created
 		if chann == nil {

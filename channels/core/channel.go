@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"go.uber.org/atomic"
 	"os"
 	sync "sync"
 	"time"
@@ -20,7 +21,7 @@ type ChannelsOptions struct {
 }
 
 // NewChannel - Create and initialize channel
-func NewChannel(ID string, AppID string) *HubChannel {
+func NewChannel(ID string, AppID string, hub *Hub) *HubChannel {
 
 	chann := GetEngine().GetCacheStorage().GetChannel(AppID, ID)
 
@@ -28,11 +29,16 @@ func NewChannel(ID string, AppID string) *HubChannel {
 		c, err := GetEngine().GetChannelRepository().GetAppChannel(AppID, ID)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "NewChannel: failed to fetch channel: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "NewChannel: failed to fetch channel: %v\n", err)
 			return nil
 		}
 
 		chann = c
+
+		if chann == nil {
+			_, _ = fmt.Fprintf(os.Stderr, "NewChannel: attempting to create unexistent channel")
+			return nil
+		}
 
 		// Update cache
 		GetEngine().GetCacheStorage().StoreChannel(AppID, ID, c)
@@ -40,6 +46,7 @@ func NewChannel(ID string, AppID string) *HubChannel {
 
 	hubChannel := &HubChannel{
 		Data: chann,
+		hub: hub,
 	}
 
 	if chann.Presence {
@@ -85,6 +92,8 @@ type HubChannel struct {
 	connectedUsers         sync.Map //[string(session_identifier)]*Session
 	connectedClientsStatus sync.Map //[string(clientID)]TimeStamp
 	isClosing              bool
+	connectedCounter	   atomic.Int32
+	hub 				   *Hub
 }
 
 // DeleteChannel - Unsubscribe all clients and stop accepting subscriptions
@@ -97,6 +106,8 @@ func (channel *HubChannel) DeleteChannel() {
 		session := value.(*Session)
 
 		session.RemoveChannel(channel.Data.ID)
+
+		GetEngine().GetPublisher().Unsubscribe(channel.Data.ID, channel.Data.AppID)
 
 		return true
 	})
@@ -288,6 +299,9 @@ func (channel *HubChannel) NewClient(session *Session) {
 		return
 	}
 
+	// Add connected counter
+	channel.connectedCounter.Inc()
+
 	channel.connectedUsers.Store(session.GetIdentifier(), session)
 
 	if channel.Data.Presence {
@@ -433,9 +447,36 @@ func (channel *HubChannel) RemoveClient(session *Session) {
 		return
 	}
 
+	channel.connectedCounter.Dec()
+
 	channel.connectedUsers.LoadAndDelete(session.GetIdentifier())
 
 	if channel.Data.Presence {
 		channel.shouldNotifyOfflinePresenceChange(session)
 	}
+
+	// If we have 0 users, then wait some minutes before removing
+	// The channel from the Hub, so we save resources
+	if channel.connectedCounter.Load() == 0 {
+		channel.shouldCloseChannel()
+	}
+}
+
+// shouldCloseChannel - Run a timer for 15 minutes, if no new connection shows up, the channel is closed
+func (channel *HubChannel) shouldCloseChannel() {
+	// Set a timer of X seconds
+	// To prevent removing channel if a user connects in the next 15 mins
+	go func() {
+		timer := time.NewTimer(time.Minute * 15)
+
+		// wait for timer
+		<-timer.C
+		timer.Stop()
+
+		if channel.connectedCounter.Load() == 0 {
+			fmt.Printf("No subscribers on channel %s for the last 15 mins, closing channel...", channel.Data.ID)
+			channel.hub.DeleteChannel(channel.Data.ID)
+		}
+
+	}()
 }

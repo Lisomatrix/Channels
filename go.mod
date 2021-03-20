@@ -42,6 +42,7 @@ require (
 	github.com/smallnest/epoller v0.0.0-20200723042610-5f1fffd432e3 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/ugorji/go v1.2.4 // indirect
+	go.uber.org/atomic v1.6.0
 	golang.org/x/crypto v0.0.0-20210314154223-e6e6c4f2bb5b // indirect
 	golang.org/x/net v0.0.0-20210316092652-d523dce5a7f4 // indirect
 	golang.org/x/sys v0.0.0-20210316164454-77fc1eacc6aa // indirect

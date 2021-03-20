@@ -167,9 +167,9 @@ func (session *Session) onClose() {
 
 func (session *Session) onNewMessage(data []byte) {
 	var newEvent NewEvent
-
+	fmt.Printf("Received event with size: %s \n", len(data))
 	err := newEvent.Unmarshal(data)
-	//err := json.Unmarshal(data, &newEvent)
+
 
 	if err != nil {
 		log.Println(err)

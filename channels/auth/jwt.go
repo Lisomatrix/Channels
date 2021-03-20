@@ -72,6 +72,7 @@ func VerifyToken(tokenString string) (Identity, bool) {
 			tokenData = Identity{
 				Role:     role,
 				ClientID: clientID,
+				AppID: appID,
 			}
 			isOK = true
 			// Otherwise check if user is Admin or Client, and check for AppID presence

@@ -84,6 +84,15 @@ func (publisher *RedisPublisher) PublishChannelEvent(appID string, channelID str
 	}
 }
 
+// Unsubscribe - Unsubscribe from a channel in redis
+func (publisher *RedisPublisher) Unsubscribe(appID string, channelID string) {
+	err := publisher.pubsub.Unsubscribe(publisher.ctx, appID+":"+channelID)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed to unsubscribe from channel %v\n", err)
+	}
+}
+
 // Subscribe - Subscribe to a channel in redis
 func (publisher *RedisPublisher) Subscribe(appID string, channelID string) {
 	err := publisher.pubsub.Subscribe(publisher.ctx, appID+":"+channelID)

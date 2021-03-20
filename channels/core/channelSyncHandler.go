@@ -371,5 +371,5 @@ func GetLastMessages(context *gin.Context) {
 	}
 
 	writer.WriteHeader(http.StatusOK)
-	writer.Write(data)
+	_, _ = writer.Write(data)
 }
