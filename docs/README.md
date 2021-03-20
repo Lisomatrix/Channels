@@ -134,6 +134,39 @@ Looking again at [app.go](https://github.com/Lisomatrix/Channels/blob/main/chann
 
 In case you pretend to make your own HTTP handlers or some custom logic you can use some helpers like this [Channel Helper](https://github.com/Lisomatrix/Channels/blob/main/channelserver/core/channelHelper.go), [Client Helper](https://github.com/Lisomatrix/Channels/blob/main/channelserver/core/clientHelper.go) and [Hubs Handler](https://github.com/Lisomatrix/Channels/blob/main/channelserver/core/hubsHandler.go) (this one can be accessed with **core.GetEngine().HubsHandler**) to avoid repeating yourself.
 
+___
+
+# Authentication
+
+First, the authentication is done by your application, **Channels** only stores client usernames and IDs (more information on Creating Client Section).<br><br>After authenticating a user, you must provide him a `JWT Token`, we'll see how they should look like in a second.
+
+## Roles
+
+The **Channels** has three roles being these:
+
+- `Super Admin`: can do anything since he is super!
+- `Admin`: can do anything in it's own app.
+- `Client`: can publish and subscribe to allowed channels on their associated App
+
+The attribution of the roles must be made by your server, app or manually. The roles are provided by the `JWT Token`, so a client can be made a `Admin` by having a token saying so!<br>
+
+## Token Data
+
+For `Admin` and `Client` we need their `Role`, `ClientID` and `AppID`, for `Super Admin` we need `Role` and `ClientID`.
+
+!> **Important:** Although we say `Super Admin` without the `_` the value in token must be `Super_Admin`
+
+
+```json
+
+{
+    "Role": "Admin", // Here you can change to Client or Super_Admin
+    "ClientID": "123",
+    "AppID": "123" // If the role is Super_Admin we don't need this field
+}
+
+```
+
 ___ 
 
 # App
