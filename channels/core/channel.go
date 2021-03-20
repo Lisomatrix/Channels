@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"go.uber.org/atomic"
 	"os"
-	sync "sync"
+	"sync"
 	"time"
 )
 

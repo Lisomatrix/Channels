@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
-	ws "github.com/gobwas/ws"
+	"github.com/gobwas/ws"
 )
 
 var upgrader = websocket.Upgrader{
@@ -70,8 +70,8 @@ func RequestHandler(context *gin.Context) {
 
 	// Start session handler
 
-	var connection *WebSocketConnection = new(WebSocketConnection)
-	var session *core.Session = new(core.Session)
+	var connection = new(WebSocketConnection)
+	var session = new(core.Session)
 
 	/*
 		client := core.GetEngine().GetCacheStorage().GetClient(appID, identity.ClientID)
@@ -136,8 +136,8 @@ func OptimizedRequestHandler(context *gin.Context) {
 	}
 
 	// Start session handler
-	var connection *OWebSocketConnection = new(OWebSocketConnection)
-	var session *core.Session = new(core.Session)
+	var connection = new(OWebSocketConnection)
+	var session = new(core.Session)
 
 	hub := core.GetEngine().HubsHandler.GetHub(identity.AppID)
 

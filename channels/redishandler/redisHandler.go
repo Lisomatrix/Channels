@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	redis "github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v8"
 )
 
 var ctx = context.Background()

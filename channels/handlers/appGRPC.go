@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	context "context"
+	"context"
 	"fmt"
 	"github.com/lisomatrix/channels/channels/auth"
 	"github.com/lisomatrix/channels/channels/core"

@@ -182,7 +182,7 @@ func (hub *Hub) Unsubscribe(channelID string, session *Session) {
 		return
 	}
 
-	var chann *HubChannel = data.(*HubChannel)
+	var chann = data.(*HubChannel)
 
 	chann.RemoveClient(session)
 }

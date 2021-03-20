@@ -7,7 +7,7 @@ import (
 
 
 	lediscfg "github.com/ledisdb/ledisdb/config"
-	ledis "github.com/ledisdb/ledisdb/ledis"
+	"github.com/ledisdb/ledisdb/ledis"
 	"google.golang.org/protobuf/proto"
 )
 

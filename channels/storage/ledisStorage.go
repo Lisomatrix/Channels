@@ -6,7 +6,7 @@ import (
 	"log"
 
 	lediscfg "github.com/ledisdb/ledisdb/config"
-	ledis "github.com/ledisdb/ledisdb/ledis"
+	"github.com/ledisdb/ledisdb/ledis"
 )
 
 // LedisStorage - Storage implementation with ledis
