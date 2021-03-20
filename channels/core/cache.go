@@ -31,10 +31,10 @@ type CacheStorage interface {
 	GetClientChannels(clientID string) ([]string, bool)
 	RemoveClientChannel(clientID string, channelID string)
 	// Channel Event
-	StoreChannelEvent(channelID string, event *ChannelEvent)
-	GetOldestChannelEvent(channelID string) *ChannelEvent
-	GetChannelEventsSize(channelID string) uint64
-	GetChannelEvents(channelID string, amount int64) []*ChannelEvent
+	StoreChannelEvent(channelID string, appID string, event *ChannelEvent)
+	GetOldestChannelEvent(channelID string, appID string) *ChannelEvent
+	GetChannelEventsSize(channelID string, appID string) uint64
+	GetChannelEvents(channelID string, appID string, amount int64) []*ChannelEvent
 }
 
 // REDIS APP

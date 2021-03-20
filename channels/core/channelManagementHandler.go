@@ -129,7 +129,7 @@ func PostEventHandler(context *gin.Context) {
 	}
 
 	if channel.Persistent {
-		GetEngine().GetCacheStorage().StoreChannelEvent(channelID, event)
+		GetEngine().GetCacheStorage().StoreChannelEvent(channelID, appID, event)
 		GetEngine().StoreEvent(channel.AppID, event)
 	}
 
@@ -150,7 +150,7 @@ func PostEventHandler(context *gin.Context) {
 	}
 
 	// If there client listening then send to them
-	hubChannel.ExternalPublish(event)
+	hubChannel.ExternalPublish(NewEvent_PUBLISH, event)
 
 	writer.WriteHeader(http.StatusOK)
 }
@@ -259,6 +259,21 @@ func PostJoinChannel(context *gin.Context) {
 		return
 	}
 
+	clientChannels, err := GetEngine().GetChannelRepository().GetClientAllowedChannels(clientID)
+
+	for _, id := range clientChannels {
+		if channelID == id {
+			writer.WriteHeader(http.StatusConflict)
+			return
+		}
+	}
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Joun channel: failed to join client to channel %v\n", err)
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	if isOK, err := JoinChannel(appID, channelID, clientID); err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "HTTP Join channel: failed to join client %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
@@ -310,8 +325,31 @@ func PostLeaveChannel(context *gin.Context) {
 		return
 	}
 
+
+	clientChannels, err := GetEngine().GetChannelRepository().GetClientAllowedChannels(clientID)
+
+	contains := false
+
+	for _, id := range clientChannels {
+		if channelID == id {
+			contains = true
+			break
+		}
+	}
+
+	if !contains {
+		writer.WriteHeader(http.StatusConflict)
+		return
+	}
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Leave channel: failed to remove client from channel %v\n", err)
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	if isOK, err := LeaveChannel(appID, channelID, clientID); err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Leave channel: remove client from channel %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Leave channel: remove client from channel %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 	} else if isOK {
 		writer.WriteHeader(http.StatusOK)

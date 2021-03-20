@@ -334,10 +334,10 @@ func GetLastMessages(context *gin.Context) {
 	var events []*ChannelEvent
 
 	if amount <= CacheQueueSize {
-		size := GetEngine().GetCacheStorage().GetChannelEventsSize(channelID)
+		size := GetEngine().GetCacheStorage().GetChannelEventsSize(channelID, appID)
 
 		if size >= uint64(amount) {
-			events = GetEngine().GetCacheStorage().GetChannelEvents(channelID, amount)
+			events = GetEngine().GetCacheStorage().GetChannelEvents(channelID, appID, amount)
 		} else {
 			events, err = GetEngine().GetChannelRepository().GetChannelLastEvents(appID, channelID, amount)
 

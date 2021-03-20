@@ -88,7 +88,7 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 	client, err := GetClient(appID, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Join channel: failed to get app client %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Join channel: failed to get app client %v\n", err)
 		return false, nil
 	}
 
@@ -109,7 +109,7 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 	err = GetEngine().GetChannelRepository().JoinClient(appID, channelID, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Join channel: failed to join client to channel %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Join channel: failed to join client to channel %v\n", err)
 		return false, err
 	}
 
@@ -123,8 +123,6 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 		hub.AddChannelToClient(clientID, channelID)
 	}
 
-	//GetEngine().HubsHandler.GetHub(appID).AddChannelToClient(clientID, channelID)
-
 	// If the channel cares about persistence and presence
 	// Then store this new event
 	if channel.Persistent && channel.Presence {
@@ -133,12 +131,12 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 			Timestamp: time.Now().Unix(),
 			EventType: "Join",
 			ChannelID: channelID,
-			Payload:   "",
+			Payload:   clientID,
 		}
 
 		// Store and cache new event
 		GetEngine().StoreEvent(channel.AppID, newChannelEvent)
-		GetEngine().GetCacheStorage().StoreChannelEvent(channelID, newChannelEvent)
+		GetEngine().GetCacheStorage().StoreChannelEvent(channelID, appID, newChannelEvent)
 
 		// If there are clients connected to hub and channel
 		// Then publish to them, otherwise there is no point
@@ -148,7 +146,7 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 
 			if channel != nil {
 				// Publish to local clients only, we send to other servers after
-				channel.ExternalPublish(newChannelEvent)
+				channel.ExternalPublish(NewEvent_PUBLISH, newChannelEvent)
 			}
 
 		}
@@ -166,7 +164,7 @@ func LeaveChannel(appID string, channelID string, clientID string) (bool, error)
 	client, err := GetClient(appID, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Leave channel: failed to get app client %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Leave channel: failed to get app client %v\n", err)
 		return false, nil
 	}
 
@@ -188,7 +186,7 @@ func LeaveChannel(appID string, channelID string, clientID string) (bool, error)
 	err = GetEngine().GetChannelRepository().LeaveClient(appID, channelID, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Leave channel: failed to join client to channel %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Leave channel: failed to remove client from channel %v\n", err)
 		return false, err
 	}
 
@@ -202,8 +200,6 @@ func LeaveChannel(appID string, channelID string, clientID string) (bool, error)
 		hub.RemoveChannelFromClient(clientID, channelID)
 	}
 
-	// GetEngine().HubsHandler.GetHub(appID).RemoveChannelFromClient(clientID, channelID)
-
 	// If the channel cares about persistence and presence
 	// Then store this new event
 	if channel.Persistent && channel.Presence {
@@ -212,12 +208,12 @@ func LeaveChannel(appID string, channelID string, clientID string) (bool, error)
 			Timestamp: time.Now().Unix(),
 			EventType: "Leave",
 			ChannelID: channelID,
-			Payload:   "",
+			Payload:   clientID,
 		}
 
 		// Store and cache new event
 		GetEngine().StoreEvent(channel.AppID, newChannelEvent)
-		GetEngine().GetCacheStorage().StoreChannelEvent(channelID, newChannelEvent)
+		GetEngine().GetCacheStorage().StoreChannelEvent(channelID, appID, newChannelEvent)
 
 		// If there are clients connected to hub and channel
 		// Then publish to them, otherwise there is no point
@@ -227,7 +223,7 @@ func LeaveChannel(appID string, channelID string, clientID string) (bool, error)
 
 			if channel != nil {
 				// Publish to local clients only, we send to other servers after
-				channel.ExternalPublish(newChannelEvent)
+				channel.ExternalPublish(NewEvent_PUBLISH, newChannelEvent)
 			}
 
 		}
@@ -253,7 +249,7 @@ func DeleteChannel(appID string, channelID string) (bool, error) {
 	}
 
 	if err := GetEngine().GetChannelRepository().DeleteChannel(appID, channelID); err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Delete channel: failed to delete channel %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Delete channel: failed to delete channel %v\n", err)
 		return false, err
 	}
 

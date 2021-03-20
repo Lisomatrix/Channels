@@ -154,7 +154,7 @@ func (publisher *RedisPublisher) handleSubscribeMessages() {
 
 			event := newEvent.GetPublishEvent()
 
-			channel.ExternalPublish(&core.ChannelEvent{
+			channel.ExternalPublish(core.NewEvent_PUBLISH, &core.ChannelEvent{
 				SenderID:  event.SenderID,
 				Payload:   event.Payload,
 				EventType: event.EventType,

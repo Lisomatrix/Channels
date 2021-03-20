@@ -8,83 +8,6 @@ import (
 	"time"
 )
 
-// ChannelPublish - Client publish payload
-type ChannelPublish struct {
-	ChannelID string
-	Payload   string
-	EventType string
-}
-
-// ChannelsOptions - Channel options
-type ChannelsOptions struct {
-	Persistent bool
-}
-
-// NewChannel - Create and initialize channel
-func NewChannel(ID string, AppID string, hub *Hub) *HubChannel {
-
-	chann := GetEngine().GetCacheStorage().GetChannel(AppID, ID)
-
-	if chann == nil {
-		c, err := GetEngine().GetChannelRepository().GetAppChannel(AppID, ID)
-
-		if err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "NewChannel: failed to fetch channel: %v\n", err)
-			return nil
-		}
-
-		chann = c
-
-		if chann == nil {
-			_, _ = fmt.Fprintf(os.Stderr, "NewChannel: attempting to create unexistent channel")
-			return nil
-		}
-
-		// Update cache
-		GetEngine().GetCacheStorage().StoreChannel(AppID, ID, c)
-	}
-
-	hubChannel := &HubChannel{
-		Data: chann,
-		hub: hub,
-	}
-
-	if chann.Presence {
-
-		clients, err := GetEngine().GetChannelRepository().GetChannelClients(chann.AppID, chann.ID)
-
-		var zero int64 = 0
-
-		if err == nil {
-			for _, c := range clients {
-				clientStatus := ClientStatus{
-					Status:    false,
-					Timestamp: zero,
-				}
-				hubChannel.connectedClientsStatus.Store(c, clientStatus)
-			}
-		}
-
-		presences := GetEngine().GetPresence().GetChannelClientsPresence(chann.AppID, chann.ID)
-
-		if presences != nil {
-
-			for key, value := range presences {
-				clientStatus := ClientStatus{
-					Status:    false,
-					Timestamp: value,
-				}
-				hubChannel.connectedClientsStatus.Store(key, clientStatus)
-			}
-
-		}
-
-	}
-
-	GetEngine().GetPublisher().Subscribe(chann.AppID, chann.ID)
-
-	return hubChannel
-}
 
 // HubChannel - Handler for topic
 type HubChannel struct {
@@ -114,7 +37,7 @@ func (channel *HubChannel) DeleteChannel() {
 }
 
 // ExternalPublish - Publish to be used by HTTP and Publisher so we don't republish nor store in db/cache
-func (channel *HubChannel) ExternalPublish(channelEvent *ChannelEvent) bool {
+func (channel *HubChannel) ExternalPublish(eventType NewEvent_NewEventType, channelEvent *ChannelEvent) bool {
 	if channel.isClosing {
 		return false
 	}
@@ -125,7 +48,19 @@ func (channel *HubChannel) ExternalPublish(channelEvent *ChannelEvent) bool {
 	data, err := channelEvent.Marshal()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal channel event: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal channel event: %v\n", err)
+		return false
+	}
+
+	newEvent := NewEvent{
+		Type:                 eventType,
+		Payload:              data,
+	}
+
+	eventData, err := newEvent.Marshal()
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal NewEvent: %v\n", err)
 		return false
 	}
 
@@ -133,7 +68,7 @@ func (channel *HubChannel) ExternalPublish(channelEvent *ChannelEvent) bool {
 
 		session := value.(*Session)
 
-		session.Publish(data)
+		session.Publish(eventData)
 
 		return true
 	})
@@ -174,7 +109,7 @@ func (channel *HubChannel) Publish(channelEvent *ChannelEvent, shouldStore bool)
 	// If it is a persistent channel store message in DB and cache
 	if channel.Data.Persistent && shouldStore {
 		GetEngine().StoreEvent(channel.Data.AppID, channelEvent)
-		GetEngine().GetCacheStorage().StoreChannelEvent(channel.Data.ID, channelEvent)
+		GetEngine().GetCacheStorage().StoreChannelEvent(channel.Data.ID, channel.Data.AppID, channelEvent)
 	}
 
 	GetEngine().GetPublisher().PublishChannelEvent(channel.Data.AppID, channel.Data.ID, channelEvent)
@@ -479,4 +414,70 @@ func (channel *HubChannel) shouldCloseChannel() {
 		}
 
 	}()
+}
+
+// NewChannel - Create and initialize channel
+func NewChannel(ID string, AppID string, hub *Hub) *HubChannel {
+
+	chann := GetEngine().GetCacheStorage().GetChannel(AppID, ID)
+
+	if chann == nil {
+		c, err := GetEngine().GetChannelRepository().GetAppChannel(AppID, ID)
+
+		if err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "NewChannel: failed to fetch channel: %v\n", err)
+			return nil
+		}
+
+		chann = c
+
+		if chann == nil {
+			_, _ = fmt.Fprintf(os.Stderr, "NewChannel: attempting to create unexistent channel")
+			return nil
+		}
+
+		// Update cache
+		GetEngine().GetCacheStorage().StoreChannel(AppID, ID, c)
+	}
+
+	hubChannel := &HubChannel{
+		Data: chann,
+		hub: hub,
+	}
+
+	if chann.Presence {
+
+		clients, err := GetEngine().GetChannelRepository().GetChannelClients(chann.AppID, chann.ID)
+
+		var zero int64 = 0
+
+		if err == nil {
+			for _, c := range clients {
+				clientStatus := ClientStatus{
+					Status:    false,
+					Timestamp: zero,
+				}
+				hubChannel.connectedClientsStatus.Store(c, clientStatus)
+			}
+		}
+
+		presences := GetEngine().GetPresence().GetChannelClientsPresence(chann.AppID, chann.ID)
+
+		if presences != nil {
+
+			for key, value := range presences {
+				clientStatus := ClientStatus{
+					Status:    false,
+					Timestamp: value,
+				}
+				hubChannel.connectedClientsStatus.Store(key, clientStatus)
+			}
+
+		}
+
+	}
+
+	GetEngine().GetPublisher().Subscribe(chann.AppID, chann.ID)
+
+	return hubChannel
 }

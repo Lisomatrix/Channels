@@ -21,18 +21,18 @@ type RedisCacheStorage struct {
 }
 
 // GetChannelEvents - Get given cached events from the channel queue
-func (cache *RedisCacheStorage) GetChannelEvents(channelID string, amount int64) []*core.ChannelEvent {
-	cmd := cache.db.LRange(cache.ctx, channelID, 0, amount)
+func (cache *RedisCacheStorage) GetChannelEvents(channelID string, appID string, amount int64) []*core.ChannelEvent {
+	cmd := cache.db.LRange(cache.ctx, "app:" + appID + "channel:" + channelID + ":events", 0, amount)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed get cached events %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed get cached events %v\n", cmd.Err())
 		return nil
 	}
 
 	dData, err := cmd.Result()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed get LRANGE result %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed get LRANGE result %v\n", cmd.Err())
 		return nil
 	}
 
@@ -44,7 +44,7 @@ func (cache *RedisCacheStorage) GetChannelEvents(channelID string, amount int64)
 		err = proto.Unmarshal([]byte(data), &cachedEvent)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Redis Cache: failed umarshal cached event %v\n", cmd.Err())
+			_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed umarshal cached event %v\n", cmd.Err())
 			return nil
 		}
 
@@ -61,18 +61,18 @@ func (cache *RedisCacheStorage) GetChannelEvents(channelID string, amount int64)
 }
 
 // GetChannelEventsSize - Get how much events are stored in cache
-func (cache *RedisCacheStorage) GetChannelEventsSize(channelID string) uint64 {
-	cmd := cache.db.LLen(cache.ctx, channelID)
+func (cache *RedisCacheStorage) GetChannelEventsSize(channelID string, appID string) uint64 {
+	cmd := cache.db.LLen(cache.ctx, "app:" + appID + "channel:" + channelID + ":events")
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed get cached event queue size %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed get cached event queue size %v\n", cmd.Err())
 		return 0
 	}
 
 	result, err := cmd.Result()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed get LRANGE result %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed get LRANGE result %v\n", cmd.Err())
 		return 0
 	}
 
@@ -80,18 +80,18 @@ func (cache *RedisCacheStorage) GetChannelEventsSize(channelID string) uint64 {
 }
 
 // GetOldestChannelEvent - Get oldest event that is stored in cache
-func (cache *RedisCacheStorage) GetOldestChannelEvent(channelID string) *core.ChannelEvent {
-	cmd := cache.db.LRange(cache.ctx, channelID, -1, -1)
+func (cache *RedisCacheStorage) GetOldestChannelEvent(channelID string, appID string) *core.ChannelEvent {
+	cmd := cache.db.LRange(cache.ctx, "app:" + appID + "channel:" + channelID + ":events", -1, -1)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed get oldest channel event %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed get oldest channel event %v\n", cmd.Err())
 		return nil
 	}
 
 	results, err := cmd.Result()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed get LRANGE result %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed get LRANGE result %v\n", cmd.Err())
 		return nil
 	}
 
@@ -104,7 +104,7 @@ func (cache *RedisCacheStorage) GetOldestChannelEvent(channelID string) *core.Ch
 	err = proto.Unmarshal([]byte(results[0]), &cachedEvent)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed umarshal cached event %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed umarshal cached event %v\n", cmd.Err())
 		return nil
 	}
 
@@ -118,7 +118,7 @@ func (cache *RedisCacheStorage) GetOldestChannelEvent(channelID string) *core.Ch
 }
 
 // StoreChannelEvent - Store channel event on the beginning of the channel queue
-func (cache *RedisCacheStorage) StoreChannelEvent(channelID string, event *core.ChannelEvent) {
+func (cache *RedisCacheStorage) StoreChannelEvent(channelID string, appID string, event *core.ChannelEvent) {
 
 	cachedEvent := CachedChannelEvent{
 		SenderID:  event.SenderID,
@@ -130,37 +130,32 @@ func (cache *RedisCacheStorage) StoreChannelEvent(channelID string, event *core.
 	eventData, err := proto.Marshal(&cachedEvent)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to marshal cached event %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to marshal cached event %v\n", err)
 		return
 	}
+
+	key := "app:" + appID + "channel:" + channelID + ":events"
 
 	// Push new event and update expire period
 	pipeliner := cache.db.Pipeline()
-	cmd := pipeliner.LPush(cache.ctx, channelID, eventData)
-	pipeliner.Expire(cache.ctx, channelID, 24*time.Hour)
+	cmd := pipeliner.LPush(cache.ctx, key, eventData)
+	pipeliner.Expire(cache.ctx, key, 24*time.Hour)
 	_, err = pipeliner.Exec(cache.ctx)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to pipeline LPUSH and EXPIRE %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to pipeline LPUSH and EXPIRE %v\n", err)
 		return
 	}
-	/*
-		cmd := cache.db.LPush(cache.ctx, channelID, eventData)
-
-		if cmd.Err() != nil {
-			fmt.Fprintf(os.Stderr, "Redis Cache: failed store channel event %v\n", cmd.Err())
-			return
-		}*/
 
 	amount, err := cmd.Result()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed get LPUSH result %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed get LPUSH result %v\n", cmd.Err())
 		return
 	}
 
 	if amount > core.CacheQueueSize {
-		cache.db.LTrim(cache.ctx, channelID, 0, core.CacheQueueSize)
+		cache.db.LTrim(cache.ctx, key, 0, core.CacheQueueSize)
 	}
 
 }
@@ -170,7 +165,7 @@ func (cache *RedisCacheStorage) CheckDeviceExistence(clientID string, id string)
 	cmd := cache.db.HExists(cache.ctx, clientID+":device", id)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to check device existence %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to check device existence %v\n", cmd.Err())
 		return false
 	}
 
@@ -182,7 +177,7 @@ func (cache *RedisCacheStorage) RemoveDevice(clientID string, id string) {
 	cmd := cache.db.HDel(cache.ctx, clientID+":device", id)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to remove device %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to remove device %v\n", cmd.Err())
 	}
 }
 
@@ -191,7 +186,7 @@ func (cache *RedisCacheStorage) AddDevice(clientID string, device *core.Device) 
 	cmd := cache.db.HSet(cache.ctx, clientID+":device", device.ID, device.Token)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to add device %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to add device %v\n", cmd.Err())
 	}
 }
 
@@ -200,14 +195,14 @@ func (cache *RedisCacheStorage) GetClientDevices(clientID string) []*core.Device
 	cmd := cache.db.HGetAll(cache.ctx, clientID+":device")
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: to get devices %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: to get devices %v\n", cmd.Err())
 		return nil
 	}
 
 	data, err := cmd.Result()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to get devices data %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to get devices data %v\n", err)
 		return nil
 	}
 
@@ -230,7 +225,7 @@ func (cache *RedisCacheStorage) RemoveClient(appID string, clientID string) {
 	cmd := cache.db.Del(cache.ctx, appID+":client:"+clientID)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to remove client %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to remove client %v\n", cmd.Err())
 	}
 }
 
@@ -239,7 +234,7 @@ func (cache *RedisCacheStorage) RemoveClientChannels(clientID string) {
 	cmd := cache.db.Del(cache.ctx, "client:"+clientID+":channels")
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to remove client channels %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to remove client channels %v\n", cmd.Err())
 	}
 }
 
@@ -248,7 +243,7 @@ func (cache *RedisCacheStorage) RemoveApp(appID string) {
 	cmd := cache.db.Del(cache.ctx, "app:"+appID)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to remove app %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to remove app %v\n", cmd.Err())
 	}
 }
 
@@ -257,7 +252,7 @@ func (cache *RedisCacheStorage) RemoveChannel(appID string, channelID string) {
 	cmd := cache.db.Del(cache.ctx, appID+":channel:"+channelID)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to remove channel %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to remove channel %v\n", cmd.Err())
 	}
 }
 
@@ -269,7 +264,7 @@ func (cache *RedisCacheStorage) StoreClient(appID string, clientID string, clien
 		err := cache.db.HMSet(cache.ctx, appID+":client:"+clientID, "username", client.Username, "extra", client.Extra)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Redis Cache: failed to store client %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to store client %v\n", err)
 			return
 		}
 	}()
@@ -280,7 +275,7 @@ func (cache *RedisCacheStorage) CheckClientExistence(appID string, clientID stri
 	cmd := cache.db.Exists(cache.ctx, appID+":client:"+clientID)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to check client existence %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to check client existence %v\n", cmd.Err())
 		return false
 	}
 
@@ -294,7 +289,7 @@ func (cache *RedisCacheStorage) GetClient(appID string, clientID string) *core.C
 	dData, err := cmd.Result()
 
 	if cmd.Err() != nil || len(dData) != 2 {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to retrieve cached client %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to retrieve cached client %v\n", err)
 		return nil
 	}
 
@@ -303,7 +298,7 @@ func (cache *RedisCacheStorage) GetClient(appID string, clientID string) *core.C
 	err = cmd.Scan(&cachedClient)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to umarshal cached client %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to umarshal cached client %v\n", err)
 		return nil
 	}
 
@@ -325,7 +320,7 @@ func (cache *RedisCacheStorage) StoreApp(appID string, name string) {
 	cmd := cache.db.Set(cache.ctx, "app:"+appID, name, 0)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to store cached app %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to store cached app %v\n", cmd.Err())
 	}
 }
 
@@ -334,14 +329,14 @@ func (cache *RedisCacheStorage) GetApp(appID string) *core.App {
 	cmd := cache.db.Get(cache.ctx, "app:"+appID)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to retrieve cached app %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to retrieve cached app %v\n", cmd.Err())
 		return nil
 	}
 
 	data, err := cmd.Result()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to parse cached app %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to parse cached app %v\n", err)
 		return nil
 	}
 
@@ -369,14 +364,14 @@ func (cache *RedisCacheStorage) StoreChannel(appID string, channelID string, cha
 		data, err := proto.Marshal(&cachedChannel)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Redis Cache: failed to marshal cached channel %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to marshal cached channel %v\n", err)
 			return
 		}
 
 		cmd := cache.db.Set(cache.ctx, appID+":channel:"+channelID, data, 0)
 
 		if cmd.Err() != nil {
-			fmt.Fprintf(os.Stderr, "Redis Cache: failed to store cached channel %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to store cached channel %v\n", err)
 			return
 		}
 	}()
@@ -388,14 +383,14 @@ func (cache *RedisCacheStorage) GetChannel(appID string, channelID string) *core
 
 	// In case it has nil then there is ni need to log this data, just means it didn't find the key
 	if cmd.Err() != nil && strings.Contains(cmd.Err().Error(), "nil") {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to retrieve execute command %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to retrieve execute command %v\n", cmd.Err())
 		return nil
 	}
 
 	data, err := cmd.Bytes()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to retrieve cached channel %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to retrieve cached channel %v\n", err)
 		return nil
 	}
 
@@ -404,7 +399,7 @@ func (cache *RedisCacheStorage) GetChannel(appID string, channelID string) *core
 	err = proto.Unmarshal(data, &cachedChannel)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to umarshal cached channel %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to umarshal cached channel %v\n", err)
 		return nil
 	}
 
@@ -426,14 +421,14 @@ func (cache *RedisCacheStorage) CheckChannelExistence(appID string, channelID st
 	cmd := cache.db.Exists(cache.ctx, appID+":channel:"+channelID)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to check cached channel existence %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to check cached channel existence %v\n", cmd.Err())
 		return false
 	}
 
 	amount, err := cmd.Uint64()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to verify channel existence %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to verify channel existence %v\n", cmd.Err())
 		return false
 	}
 
@@ -449,7 +444,7 @@ func (cache *RedisCacheStorage) AddClientChannels(clientID string, channelIDs []
 		channelsBin = append(channelsBin, []byte(c))
 	}
 
-	cmd := cache.db.SAdd(cache.ctx, "client:"+clientID+":channels")
+	cmd := cache.db.SAdd(cache.ctx, "client:"+clientID+":channels", channelsBin)
 
 	if cmd.Err() != nil {
 		fmt.Fprintf(os.Stderr, "Redis Cache: failed to add multiple client channels %v\n", cmd.Err())
@@ -462,14 +457,14 @@ func (cache *RedisCacheStorage) GetClientChannels(clientID string) ([]string, bo
 	cmd := cache.db.SMembers(cache.ctx, "client:"+clientID+":channels")
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to executre command %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to executre command %v\n", cmd.Err())
 		return nil, false
 	}
 
 	dData, err := cmd.Result()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to retrieve client channels %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to retrieve client channels %v\n", err)
 		return nil, false
 	}
 
@@ -491,7 +486,7 @@ func (cache *RedisCacheStorage) AddClientChannel(clientID string, channelID stri
 	cmd := cache.db.SAdd(cache.ctx, "client:"+clientID+":channels", channelID)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to add single client channel %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to add single client channel %v\n", cmd.Err())
 	}
 }
 
@@ -500,11 +495,10 @@ func (cache *RedisCacheStorage) RemoveClientChannel(clientID string, channelID s
 	cmd := cache.db.SRem(cache.ctx, "client:"+clientID+":channels", channelID)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to store client channels %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to store client channels %v\n", cmd.Err())
 	}
 }
 
-var ctx = context.Background()
 
 // NewRedisCacheStorage - Create a new Redis cache instance
 func NewRedisCacheStorage() *RedisCacheStorage {

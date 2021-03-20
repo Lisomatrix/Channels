@@ -56,7 +56,7 @@ func (srv *ChannelServer) PublishEvent(ctx context.Context, req *ChannelPublishR
 	}
 
 	if channel.Persistent {
-		core.GetEngine().GetCacheStorage().StoreChannelEvent(req.ChannelID, event)
+		core.GetEngine().GetCacheStorage().StoreChannelEvent(req.ChannelID, req.AppID, event)
 		core.GetEngine().StoreEvent(req.AppID, event)
 	}
 
@@ -75,7 +75,7 @@ func (srv *ChannelServer) PublishEvent(ctx context.Context, req *ChannelPublishR
 	}
 
 	// If there client listening then send to them
-	hubChannel.ExternalPublish(event)
+	hubChannel.ExternalPublish(core.NewEvent_PUBLISH, event)
 
 	return &DefaultResponse{IsOK: true}, nil
 }

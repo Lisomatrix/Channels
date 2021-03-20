@@ -171,10 +171,10 @@ func (srv *SyncServer) GetLastMessages(ctx context.Context, req *GetLastMessages
 	var events []*core.ChannelEvent
 
 	if req.Amount <= core.CacheQueueSize {
-		size := core.GetEngine().GetCacheStorage().GetChannelEventsSize(req.ChannelID)
+		size := core.GetEngine().GetCacheStorage().GetChannelEventsSize(req.ChannelID, req.AppID)
 
 		if size >= uint64(req.Amount) {
-			events = core.GetEngine().GetCacheStorage().GetChannelEvents(req.ChannelID, req.Amount)
+			events = core.GetEngine().GetCacheStorage().GetChannelEvents(req.ChannelID, req.AppID, req.Amount)
 		} else {
 			events, err = core.GetEngine().GetChannelRepository().GetChannelLastEvents(req.AppID, req.ChannelID, req.Amount)
 
