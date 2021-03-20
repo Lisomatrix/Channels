@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+//.\protoc-3.14.0-win64\bin\protoc.exe --gofast_out="go_src" ./channels.proto
+//.\protoc-3.14.0-win64\bin\protoc.exe --java_out="java_src" ./channels.proto
+
+message PublishRequest {
+    uint32 ID = 1;
+    string eventType = 2;
+    string channelID = 3;
+    string payload = 4;
+}
+
+message SubscribeRequest {
+    string channelID = 1;
+    uint32 ID = 2;
+}
+
+message PublishAck {
+    uint32 replyTo = 1;
+    bool status = 2;
+}
+
+message ChannelEvent {
+    string senderID = 1;
+    string eventType = 2;
+    string payload = 3;
+    string channelID = 4;
+    int64 timestamp = 5;
+}
+
+message ClientStatus {
+    bool status = 1;
+    int64 timestamp = 2;
+}
+
+message InitialPresenceStatus {
+    string channelID = 1;
+    map<string, ClientStatus> clientStatus = 2;
+}
+
+message ClientJoin {
+    string channelID = 1;
+    string clientID = 2;
+}
+
+message ClientLeave {
+    string channelID = 1;
+    string clientID = 2;
+}
+
+message OnlineStatusUpdate {
+    string channelID = 1;
+    string clientID = 2;
+    bool status = 3;
+    int64 timestamp = 4; 
+}
+
+message NewEvent {
+    enum NewEventType {
+        JOIN_CHANNEL = 0;
+        LEAVE_CHANNEL = 1;
+        NEW_CHANNEL = 2;
+        REMOVE_CHANNEL = 3;
+        SUBSCRIBE = 4;
+        PUBLISH = 5;
+        ACK = 6;
+        ONLINE_STATUS = 7;
+        INITIAL_ONLINE_STATUS = 8;
+    }
+
+    NewEventType type = 1;
+    bytes payload = 2;
+}
+
+message Envelope {
+    bool isMultiple = 1;
+    repeated NewEvent events = 2;
+}

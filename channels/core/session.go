@@ -70,7 +70,6 @@ func (session *Session) Init(connection Connection, deviceID string, identity *a
 	// channels
 	session.SubscribedChannels = make([]*HubChannel, 0)
 	session.AllowedChannels = channelIds
-	//session.SubscribedChannels = make([]string, 0)
 	// Connection
 	session.connection = connection
 	// Client info
@@ -100,7 +99,6 @@ func (session *Session) AddChannel(channelID string) {
 		Payload: []byte(channelID),
 	}
 
-	//data, err := json.Marshal(&)
 	data, err := newEvent.Marshal()
 
 	if err != nil {
@@ -118,11 +116,10 @@ func (session *Session) RemoveChannel(channelID string) {
 		Payload: []byte(channelID),
 	}
 
-	//data, err := json.Marshal(&newEvent)
 	data, err := newEvent.Marshal()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Session Remove channel: failed to marhal new event: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Session Remove channel: failed to marhal new event: %v\n", err)
 	}
 
 	session.connection.Send(data)

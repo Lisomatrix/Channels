@@ -150,7 +150,7 @@ func PostEventHandler(context *gin.Context) {
 	}
 
 	// If there client listening then send to them
-	hubChannel.ExternalPublish(NewEvent_PUBLISH, event)
+	hubChannel.ExternalPublish(event)
 
 	writer.WriteHeader(http.StatusOK)
 }

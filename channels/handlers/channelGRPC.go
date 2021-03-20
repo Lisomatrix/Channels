@@ -75,7 +75,7 @@ func (srv *ChannelServer) PublishEvent(ctx context.Context, req *ChannelPublishR
 	}
 
 	// If there client listening then send to them
-	hubChannel.ExternalPublish(core.NewEvent_PUBLISH, event)
+	hubChannel.ExternalPublish(event)
 
 	return &DefaultResponse{IsOK: true}, nil
 }

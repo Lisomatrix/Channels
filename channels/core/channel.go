@@ -36,8 +36,36 @@ func (channel *HubChannel) DeleteChannel() {
 	})
 }
 
+// PublishJoinLeave - Publish Join or Leave events to connected clients
+func (channel *HubChannel) PublishJoinLeave(eventType NewEvent_NewEventType, payload []byte) {
+	if channel.isClosing {
+		return
+	}
+
+	newEvent := NewEvent{
+		Type:                 eventType,
+		Payload:              payload,
+	}
+
+	eventData, err := newEvent.Marshal()
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal NewEvent: %v\n", err)
+		return
+	}
+
+	channel.connectedUsers.Range(func(key interface{}, value interface{}) bool {
+
+		session := value.(*Session)
+
+		session.Publish(eventData)
+
+		return true
+	})
+}
+
 // ExternalPublish - Publish to be used by HTTP and Publisher so we don't republish nor store in db/cache
-func (channel *HubChannel) ExternalPublish(eventType NewEvent_NewEventType, channelEvent *ChannelEvent) bool {
+func (channel *HubChannel) ExternalPublish(channelEvent *ChannelEvent) bool {
 	if channel.isClosing {
 		return false
 	}
@@ -53,7 +81,7 @@ func (channel *HubChannel) ExternalPublish(eventType NewEvent_NewEventType, chan
 	}
 
 	newEvent := NewEvent{
-		Type:                 eventType,
+		Type:                 NewEvent_PUBLISH,
 		Payload:              data,
 	}
 
@@ -194,7 +222,7 @@ func (channel *HubChannel) PublishStatusChange(statusUpdate *OnlineStatusUpdate)
 	statusUpdateData, err := statusUpdate.Marshal()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal status update: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal status update: %v\n", err)
 	}
 
 	newEvent := NewEvent{
@@ -202,11 +230,10 @@ func (channel *HubChannel) PublishStatusChange(statusUpdate *OnlineStatusUpdate)
 		Payload: statusUpdateData,
 	}
 
-	//newEventData, err := json.Marshal(&newEvent)
 	newEventData, err := newEvent.Marshal()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal new event on status update: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal new event on status update: %v\n", err)
 	}
 
 	// Update other servers about this change

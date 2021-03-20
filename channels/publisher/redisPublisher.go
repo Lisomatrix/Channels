@@ -21,6 +21,76 @@ type RedisPublisher struct {
 	ctx    context.Context
 }
 
+func (publisher *RedisPublisher) PublishChannelPresenceChange(appID string, channelID string, clientID string, isJoin bool) {
+
+	presenceType := ExternalChannelPresenceType_Join
+
+	if !isJoin {
+		presenceType = ExternalChannelPresenceType_Leave
+	}
+
+	channelPresenceChange := ExternalJoinLeaveClientEvent{
+		ClientID:             clientID,
+		ChannelID:            channelID,
+		PresenceType:         presenceType,
+	}
+
+	newEvent := ExternalNewEvent{
+		Type:              ExternalNewEventType_ChannelEvent,
+		ServerID:          core.GetEngine().GetServerID(),
+		ExternalJoinLeave: &channelPresenceChange,
+	}
+
+	data, err := newEvent.Marshal()
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed to marshal event %v\n", err)
+		return
+	}
+
+	cmd := publisher.client.Publish(publisher.ctx, appID+":"+channelID, data)
+
+	if cmd.Err() != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed to publish event %v\n", err)
+		return
+	}
+}
+
+func (publisher *RedisPublisher) PublishChannelAccessChange(appID string, channelID string, clientID string, isAdd bool) {
+
+	accessType := ExternalChannelAccessType_Add
+
+	if !isAdd {
+		accessType = ExternalChannelAccessType_Remove
+	}
+
+	accessEvent := ExternalChannelAccessEvent{
+		ExternalAccessType:   accessType,
+		ClientID:             clientID,
+		ChannelID:            channelID,
+	}
+
+	newEvent := ExternalNewEvent{
+		Type:              ExternalNewEventType_ChannelEvent,
+		ServerID:          core.GetEngine().GetServerID(),
+		ExternalAccessEvent: &accessEvent,
+	}
+
+	data, err := newEvent.Marshal()
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed to marshal event %v\n", err)
+		return
+	}
+
+	cmd := publisher.client.Publish(publisher.ctx, appID+":"+channelID, data)
+
+	if cmd.Err() != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed to publish event %v\n", err)
+		return
+	}
+}
+
 // PublishChannelOnlineChange - Publish Online status change to other servers
 func (publisher *RedisPublisher) PublishChannelOnlineChange(appID string, channelID string, statusUpdate *core.OnlineStatusUpdate) {
 
@@ -33,7 +103,7 @@ func (publisher *RedisPublisher) PublishChannelOnlineChange(appID string, channe
 	newEvent := ExternalNewEvent{
 		Type:              ExternalNewEventType_ChannelEvent,
 		ServerID:          core.GetEngine().GetServerID(),
-		OnlineStatusEvent: &onlineStatusEvent,
+		ExternalOnlineStatus: &onlineStatusEvent,
 	}
 
 	data, err := newEvent.Marshal()
@@ -64,7 +134,7 @@ func (publisher *RedisPublisher) PublishChannelEvent(appID string, channelID str
 	newEvent := ExternalNewEvent{
 		Type:         ExternalNewEventType_ChannelEvent,
 		ServerID:     core.GetEngine().GetServerID(),
-		PublishEvent: &publishEvent,
+		ExternalPublishEvent: &publishEvent,
 	}
 
 	data, err := newEvent.Marshal()
@@ -73,8 +143,6 @@ func (publisher *RedisPublisher) PublishChannelEvent(appID string, channelID str
 		_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed to marshal event %v\n", err)
 		return
 	}
-
-	//fmt.Fprintf(os.Stderr, "Redis Publisher: publishing event with size: %d bytes\n", len(data))
 
 	cmd := publisher.client.Publish(publisher.ctx, appID+":"+channelID, data)
 
@@ -152,9 +220,9 @@ func (publisher *RedisPublisher) handleSubscribeMessages() {
 
 		if newEvent.Type == ExternalNewEventType_ChannelEvent {
 
-			event := newEvent.GetPublishEvent()
+			event := newEvent.GetExternalPublishEvent()
 
-			channel.ExternalPublish(core.NewEvent_PUBLISH, &core.ChannelEvent{
+			channel.ExternalPublish(&core.ChannelEvent{
 				SenderID:  event.SenderID,
 				Payload:   event.Payload,
 				EventType: event.EventType,
@@ -163,7 +231,7 @@ func (publisher *RedisPublisher) handleSubscribeMessages() {
 			})
 
 		} else if newEvent.Type == ExternalNewEventType_OnlineStatus {
-			event := newEvent.GetOnlineStatusEvent()
+			event := newEvent.GetExternalOnlineStatus()
 
 			channel.ExternalPublishStatusChange(&core.OnlineStatusUpdate{
 				ChannelID: channelID,
@@ -171,6 +239,44 @@ func (publisher *RedisPublisher) handleSubscribeMessages() {
 				Status:    event.Status,
 				ClientID:  event.ClientID,
 			})
+
+		} else if newEvent.Type == ExternalNewEventType_ChannelAccess {
+			event := newEvent.GetExternalAccessEvent()
+
+			if event.ExternalAccessType == ExternalChannelAccessType_Add {
+				hub.RemoveChannelFromClient(event.ClientID, event.ChannelID)
+			} else if event.ExternalAccessType == ExternalChannelAccessType_Remove {
+				hub.AddChannelToClient(event.ClientID, event.ChannelID)
+			}
+
+		} else if newEvent.Type == ExternalNewEventType_ChannelPresence {
+
+			event := newEvent.GetExternalJoinLeave()
+
+			if event.PresenceType == ExternalChannelPresenceType_Join {
+
+				clientJoined := core.ClientJoin{
+					ChannelID:            event.ChannelID,
+					ClientID:             event.ClientID,
+				}
+
+				if data, err := clientJoined.Marshal(); err != nil {
+					_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed to marshal external channel presence event (JOIN TYPE) \n")
+				} else {
+					channel.PublishJoinLeave(core.NewEvent_JOIN_CHANNEL, data)
+				}
+			} else if event.PresenceType == ExternalChannelPresenceType_Leave {
+				clientLeave := core.ClientLeave{
+					ChannelID:            event.ChannelID,
+					ClientID:             event.ClientID,
+				}
+
+				if data, err := clientLeave.Marshal(); err != nil {
+					_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: failed to marshal external channel presence event (LEAVE TYPE) \n")
+				} else {
+					channel.PublishJoinLeave(core.NewEvent_LEAVE_CHANNEL, data)
+				}
+			}
 
 		} else {
 			_, _ = fmt.Fprintf(os.Stderr, "Redis Publisher: received Unknown event type \n")

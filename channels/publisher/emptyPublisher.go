@@ -4,6 +4,14 @@ import "github.com/lisomatrix/channels/channels/core"
 
 type EmptyPublisher struct {}
 
+func (publisher *EmptyPublisher) PublishChannelPresenceChange(appID string, channelID string, clientID string, isJoin bool) {
+
+}
+
+func (publisher *EmptyPublisher) PublishChannelAccessChange(appID string, channelID string, clientID string, isAdd bool) {
+
+}
+
 func (publisher *EmptyPublisher) PublishChannelEvent(appID string, channelID string, channelEvent *core.ChannelEvent) {
 
 }

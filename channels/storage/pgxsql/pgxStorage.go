@@ -4,10 +4,8 @@ package pgxsql
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
-
 	"github.com/lisomatrix/channels/channels/core"
+	"log"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -89,14 +87,12 @@ func NewSQLStorageDatabase() *PGXDatabaseStorage {
 
 	if err != nil {
 		log.Fatal("Unable to parse DATABASE_URL", "error", err)
-		os.Exit(1)
 	}
 	poolConfig.MaxConns = 5
 
 	conn, err := pgxpool.ConnectConfig(context.Background(), poolConfig)
 	if err != nil {
 		log.Fatal("Unable to create connection pool", "error", err)
-		os.Exit(1)
 	}
 
 	return &PGXDatabaseStorage{db: conn}

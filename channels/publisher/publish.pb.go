@@ -25,18 +25,24 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 type ExternalNewEventType int32
 
 const (
-	ExternalNewEventType_OnlineStatus ExternalNewEventType = 0
-	ExternalNewEventType_ChannelEvent ExternalNewEventType = 1
+	ExternalNewEventType_OnlineStatus    ExternalNewEventType = 0
+	ExternalNewEventType_ChannelEvent    ExternalNewEventType = 1
+	ExternalNewEventType_ChannelPresence ExternalNewEventType = 2
+	ExternalNewEventType_ChannelAccess   ExternalNewEventType = 3
 )
 
 var ExternalNewEventType_name = map[int32]string{
 	0: "OnlineStatus",
 	1: "ChannelEvent",
+	2: "ChannelPresence",
+	3: "ChannelAccess",
 }
 
 var ExternalNewEventType_value = map[string]int32{
-	"OnlineStatus": 0,
-	"ChannelEvent": 1,
+	"OnlineStatus":    0,
+	"ChannelEvent":    1,
+	"ChannelPresence": 2,
+	"ChannelAccess":   3,
 }
 
 func (x ExternalNewEventType) String() string {
@@ -47,28 +53,77 @@ func (ExternalNewEventType) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_34180b7635741fb2, []int{0}
 }
 
-type ExternalNewEvent struct {
-	Type                 ExternalNewEventType       `protobuf:"varint,1,opt,name=type,proto3,enum=ExternalNewEventType" json:"type,omitempty"`
-	ServerID             string                     `protobuf:"bytes,2,opt,name=serverID,proto3" json:"serverID,omitempty"`
-	OnlineStatusEvent    *ExternalOnlineStatusEvent `protobuf:"bytes,3,opt,name=onlineStatusEvent,proto3" json:"onlineStatusEvent,omitempty"`
-	PublishEvent         *ExternalPublishEvent      `protobuf:"bytes,4,opt,name=publishEvent,proto3" json:"publishEvent,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
-	XXX_unrecognized     []byte                     `json:"-"`
-	XXX_sizecache        int32                      `json:"-"`
+type ExternalChannelPresenceType int32
+
+const (
+	ExternalChannelPresenceType_Join  ExternalChannelPresenceType = 0
+	ExternalChannelPresenceType_Leave ExternalChannelPresenceType = 1
+)
+
+var ExternalChannelPresenceType_name = map[int32]string{
+	0: "Join",
+	1: "Leave",
 }
 
-func (m *ExternalNewEvent) Reset()         { *m = ExternalNewEvent{} }
-func (m *ExternalNewEvent) String() string { return proto.CompactTextString(m) }
-func (*ExternalNewEvent) ProtoMessage()    {}
-func (*ExternalNewEvent) Descriptor() ([]byte, []int) {
+var ExternalChannelPresenceType_value = map[string]int32{
+	"Join":  0,
+	"Leave": 1,
+}
+
+func (x ExternalChannelPresenceType) String() string {
+	return proto.EnumName(ExternalChannelPresenceType_name, int32(x))
+}
+
+func (ExternalChannelPresenceType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_34180b7635741fb2, []int{1}
+}
+
+type ExternalChannelAccessType int32
+
+const (
+	ExternalChannelAccessType_Add    ExternalChannelAccessType = 0
+	ExternalChannelAccessType_Remove ExternalChannelAccessType = 1
+)
+
+var ExternalChannelAccessType_name = map[int32]string{
+	0: "Add",
+	1: "Remove",
+}
+
+var ExternalChannelAccessType_value = map[string]int32{
+	"Add":    0,
+	"Remove": 1,
+}
+
+func (x ExternalChannelAccessType) String() string {
+	return proto.EnumName(ExternalChannelAccessType_name, int32(x))
+}
+
+func (ExternalChannelAccessType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_34180b7635741fb2, []int{2}
+}
+
+type ExternalChannelAccessEvent struct {
+	ExternalAccessType   ExternalChannelAccessType `protobuf:"varint,1,opt,name=externalAccessType,proto3,enum=ExternalChannelAccessType" json:"externalAccessType,omitempty"`
+	ClientID             string                    `protobuf:"bytes,2,opt,name=clientID,proto3" json:"clientID,omitempty"`
+	ChannelID            string                    `protobuf:"bytes,3,opt,name=channelID,proto3" json:"channelID,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
+	XXX_unrecognized     []byte                    `json:"-"`
+	XXX_sizecache        int32                     `json:"-"`
+}
+
+func (m *ExternalChannelAccessEvent) Reset()         { *m = ExternalChannelAccessEvent{} }
+func (m *ExternalChannelAccessEvent) String() string { return proto.CompactTextString(m) }
+func (*ExternalChannelAccessEvent) ProtoMessage()    {}
+func (*ExternalChannelAccessEvent) Descriptor() ([]byte, []int) {
 	return fileDescriptor_34180b7635741fb2, []int{0}
 }
-func (m *ExternalNewEvent) XXX_Unmarshal(b []byte) error {
+func (m *ExternalChannelAccessEvent) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *ExternalNewEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *ExternalChannelAccessEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_ExternalNewEvent.Marshal(b, m, deterministic)
+		return xxx_messageInfo_ExternalChannelAccessEvent.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -78,44 +133,37 @@ func (m *ExternalNewEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return b[:n], nil
 	}
 }
-func (m *ExternalNewEvent) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ExternalNewEvent.Merge(m, src)
+func (m *ExternalChannelAccessEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ExternalChannelAccessEvent.Merge(m, src)
 }
-func (m *ExternalNewEvent) XXX_Size() int {
+func (m *ExternalChannelAccessEvent) XXX_Size() int {
 	return m.Size()
 }
-func (m *ExternalNewEvent) XXX_DiscardUnknown() {
-	xxx_messageInfo_ExternalNewEvent.DiscardUnknown(m)
+func (m *ExternalChannelAccessEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_ExternalChannelAccessEvent.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_ExternalNewEvent proto.InternalMessageInfo
+var xxx_messageInfo_ExternalChannelAccessEvent proto.InternalMessageInfo
 
-func (m *ExternalNewEvent) GetType() ExternalNewEventType {
+func (m *ExternalChannelAccessEvent) GetExternalAccessType() ExternalChannelAccessType {
 	if m != nil {
-		return m.Type
+		return m.ExternalAccessType
 	}
-	return ExternalNewEventType_OnlineStatus
+	return ExternalChannelAccessType_Add
 }
 
-func (m *ExternalNewEvent) GetServerID() string {
+func (m *ExternalChannelAccessEvent) GetClientID() string {
 	if m != nil {
-		return m.ServerID
+		return m.ClientID
 	}
 	return ""
 }
 
-func (m *ExternalNewEvent) GetOnlineStatusEvent() *ExternalOnlineStatusEvent {
+func (m *ExternalChannelAccessEvent) GetChannelID() string {
 	if m != nil {
-		return m.OnlineStatusEvent
+		return m.ChannelID
 	}
-	return nil
-}
-
-func (m *ExternalNewEvent) GetPublishEvent() *ExternalPublishEvent {
-	if m != nil {
-		return m.PublishEvent
-	}
-	return nil
+	return ""
 }
 
 type ExternalPublishEvent struct {
@@ -252,40 +300,206 @@ func (m *ExternalOnlineStatusEvent) GetTimestamp() int64 {
 	return 0
 }
 
+type ExternalJoinLeaveClientEvent struct {
+	ClientID             string                      `protobuf:"bytes,1,opt,name=clientID,proto3" json:"clientID,omitempty"`
+	ChannelID            string                      `protobuf:"bytes,2,opt,name=channelID,proto3" json:"channelID,omitempty"`
+	PresenceType         ExternalChannelPresenceType `protobuf:"varint,3,opt,name=presenceType,proto3,enum=ExternalChannelPresenceType" json:"presenceType,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                    `json:"-"`
+	XXX_unrecognized     []byte                      `json:"-"`
+	XXX_sizecache        int32                       `json:"-"`
+}
+
+func (m *ExternalJoinLeaveClientEvent) Reset()         { *m = ExternalJoinLeaveClientEvent{} }
+func (m *ExternalJoinLeaveClientEvent) String() string { return proto.CompactTextString(m) }
+func (*ExternalJoinLeaveClientEvent) ProtoMessage()    {}
+func (*ExternalJoinLeaveClientEvent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_34180b7635741fb2, []int{3}
+}
+func (m *ExternalJoinLeaveClientEvent) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ExternalJoinLeaveClientEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ExternalJoinLeaveClientEvent.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ExternalJoinLeaveClientEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ExternalJoinLeaveClientEvent.Merge(m, src)
+}
+func (m *ExternalJoinLeaveClientEvent) XXX_Size() int {
+	return m.Size()
+}
+func (m *ExternalJoinLeaveClientEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_ExternalJoinLeaveClientEvent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ExternalJoinLeaveClientEvent proto.InternalMessageInfo
+
+func (m *ExternalJoinLeaveClientEvent) GetClientID() string {
+	if m != nil {
+		return m.ClientID
+	}
+	return ""
+}
+
+func (m *ExternalJoinLeaveClientEvent) GetChannelID() string {
+	if m != nil {
+		return m.ChannelID
+	}
+	return ""
+}
+
+func (m *ExternalJoinLeaveClientEvent) GetPresenceType() ExternalChannelPresenceType {
+	if m != nil {
+		return m.PresenceType
+	}
+	return ExternalChannelPresenceType_Join
+}
+
+type ExternalNewEvent struct {
+	Type                 ExternalNewEventType          `protobuf:"varint,1,opt,name=type,proto3,enum=ExternalNewEventType" json:"type,omitempty"`
+	ServerID             string                        `protobuf:"bytes,2,opt,name=serverID,proto3" json:"serverID,omitempty"`
+	ExternalPublishEvent *ExternalPublishEvent         `protobuf:"bytes,3,opt,name=externalPublishEvent,proto3" json:"externalPublishEvent,omitempty"`
+	ExternalOnlineStatus *ExternalOnlineStatusEvent    `protobuf:"bytes,4,opt,name=externalOnlineStatus,proto3" json:"externalOnlineStatus,omitempty"`
+	ExternalJoinLeave    *ExternalJoinLeaveClientEvent `protobuf:"bytes,5,opt,name=externalJoinLeave,proto3" json:"externalJoinLeave,omitempty"`
+	ExternalAccessEvent  *ExternalChannelAccessEvent   `protobuf:"bytes,6,opt,name=externalAccessEvent,proto3" json:"externalAccessEvent,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
+	XXX_unrecognized     []byte                        `json:"-"`
+	XXX_sizecache        int32                         `json:"-"`
+}
+
+func (m *ExternalNewEvent) Reset()         { *m = ExternalNewEvent{} }
+func (m *ExternalNewEvent) String() string { return proto.CompactTextString(m) }
+func (*ExternalNewEvent) ProtoMessage()    {}
+func (*ExternalNewEvent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_34180b7635741fb2, []int{4}
+}
+func (m *ExternalNewEvent) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ExternalNewEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ExternalNewEvent.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ExternalNewEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ExternalNewEvent.Merge(m, src)
+}
+func (m *ExternalNewEvent) XXX_Size() int {
+	return m.Size()
+}
+func (m *ExternalNewEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_ExternalNewEvent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ExternalNewEvent proto.InternalMessageInfo
+
+func (m *ExternalNewEvent) GetType() ExternalNewEventType {
+	if m != nil {
+		return m.Type
+	}
+	return ExternalNewEventType_OnlineStatus
+}
+
+func (m *ExternalNewEvent) GetServerID() string {
+	if m != nil {
+		return m.ServerID
+	}
+	return ""
+}
+
+func (m *ExternalNewEvent) GetExternalPublishEvent() *ExternalPublishEvent {
+	if m != nil {
+		return m.ExternalPublishEvent
+	}
+	return nil
+}
+
+func (m *ExternalNewEvent) GetExternalOnlineStatus() *ExternalOnlineStatusEvent {
+	if m != nil {
+		return m.ExternalOnlineStatus
+	}
+	return nil
+}
+
+func (m *ExternalNewEvent) GetExternalJoinLeave() *ExternalJoinLeaveClientEvent {
+	if m != nil {
+		return m.ExternalJoinLeave
+	}
+	return nil
+}
+
+func (m *ExternalNewEvent) GetExternalAccessEvent() *ExternalChannelAccessEvent {
+	if m != nil {
+		return m.ExternalAccessEvent
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterEnum("ExternalNewEventType", ExternalNewEventType_name, ExternalNewEventType_value)
-	proto.RegisterType((*ExternalNewEvent)(nil), "ExternalNewEvent")
+	proto.RegisterEnum("ExternalChannelPresenceType", ExternalChannelPresenceType_name, ExternalChannelPresenceType_value)
+	proto.RegisterEnum("ExternalChannelAccessType", ExternalChannelAccessType_name, ExternalChannelAccessType_value)
+	proto.RegisterType((*ExternalChannelAccessEvent)(nil), "ExternalChannelAccessEvent")
 	proto.RegisterType((*ExternalPublishEvent)(nil), "ExternalPublishEvent")
 	proto.RegisterType((*ExternalOnlineStatusEvent)(nil), "ExternalOnlineStatusEvent")
+	proto.RegisterType((*ExternalJoinLeaveClientEvent)(nil), "ExternalJoinLeaveClientEvent")
+	proto.RegisterType((*ExternalNewEvent)(nil), "ExternalNewEvent")
 }
 
 func init() { proto.RegisterFile("publish.proto", fileDescriptor_34180b7635741fb2) }
 
 var fileDescriptor_34180b7635741fb2 = []byte{
-	// 314 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x92, 0x41, 0x4e, 0xc2, 0x40,
-	0x14, 0x86, 0x19, 0x21, 0x08, 0x4f, 0x34, 0x75, 0xa2, 0xa6, 0x12, 0xd3, 0x10, 0x56, 0xd5, 0x05,
-	0x0b, 0x5c, 0xe9, 0x52, 0x25, 0xd1, 0x8d, 0x9a, 0xd1, 0x0b, 0x0c, 0xf2, 0x12, 0x9a, 0x4c, 0xa7,
-	0x93, 0x76, 0x40, 0x7b, 0x03, 0x8f, 0xe0, 0x91, 0x5c, 0x7a, 0x02, 0x63, 0xea, 0x45, 0x4c, 0xa7,
-	0x2d, 0x2d, 0x55, 0x97, 0xff, 0xeb, 0xff, 0xde, 0xff, 0xfd, 0xe9, 0xc0, 0xb6, 0x5a, 0x4c, 0x85,
-	0x17, 0xcd, 0x47, 0x2a, 0x0c, 0x74, 0x30, 0xfc, 0x24, 0x60, 0x4d, 0x5e, 0x34, 0x86, 0x92, 0x8b,
-	0x5b, 0x7c, 0x9e, 0x2c, 0x51, 0x6a, 0x7a, 0x0c, 0x2d, 0x1d, 0x2b, 0xb4, 0xc9, 0x80, 0xb8, 0x3b,
-	0xe3, 0xfd, 0x51, 0xdd, 0xf0, 0x18, 0x2b, 0x64, 0xc6, 0x42, 0xfb, 0xd0, 0x89, 0x30, 0x5c, 0x62,
-	0x78, 0x73, 0x65, 0x6f, 0x0c, 0x88, 0xdb, 0x65, 0x2b, 0x4d, 0xaf, 0x61, 0x37, 0x90, 0xc2, 0x93,
-	0xf8, 0xa0, 0xb9, 0x5e, 0x44, 0x66, 0xd5, 0x6e, 0x0e, 0x88, 0xbb, 0x35, 0xee, 0xaf, 0x6e, 0xde,
-	0xd5, 0x1d, 0xec, 0xf7, 0x12, 0x3d, 0x83, 0x5e, 0x8e, 0x9d, 0x1d, 0x69, 0x99, 0x23, 0x25, 0xd8,
-	0x7d, 0xe5, 0x23, 0x5b, 0xb3, 0x0e, 0x5f, 0x09, 0xec, 0xfd, 0x65, 0xcb, 0xc8, 0xe5, 0xcc, 0x90,
-	0x93, 0x82, 0x3c, 0xd3, 0xf4, 0x08, 0xba, 0x58, 0x14, 0xcd, 0x6b, 0x95, 0x03, 0x6a, 0xc3, 0xa6,
-	0xe2, 0xb1, 0x08, 0xf8, 0xcc, 0xb4, 0xe9, 0xb2, 0x42, 0xa6, 0x7b, 0xda, 0xf3, 0x31, 0xd2, 0xdc,
-	0x57, 0x06, 0xb2, 0xc9, 0xca, 0xc1, 0xd0, 0x87, 0xc3, 0x7f, 0x5b, 0xa7, 0x38, 0x4f, 0xc2, 0x43,
-	0xa9, 0x4b, 0x9c, 0x42, 0xd3, 0x03, 0x68, 0x47, 0xc6, 0x6a, 0x58, 0x3a, 0x2c, 0x57, 0xeb, 0x71,
-	0xcd, 0x5a, 0xdc, 0xc9, 0x79, 0x59, 0xbc, 0xfa, 0xe3, 0xa8, 0x05, 0xbd, 0x6a, 0xbc, 0xd5, 0x48,
-	0x27, 0x97, 0x73, 0x2e, 0x25, 0x0a, 0xe3, 0xb2, 0xc8, 0x85, 0xf5, 0x9e, 0x38, 0xe4, 0x23, 0x71,
-	0xc8, 0x57, 0xe2, 0x90, 0xb7, 0x6f, 0xa7, 0x31, 0x6d, 0x9b, 0xf7, 0x72, 0xfa, 0x13, 0x00, 0x00,
-	0xff, 0xff, 0x7f, 0x48, 0xe2, 0x1e, 0x40, 0x02, 0x00, 0x00,
+	// 510 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x54, 0xcd, 0x6e, 0xd3, 0x40,
+	0x10, 0xce, 0xc6, 0x69, 0x9a, 0x4c, 0x5b, 0xd8, 0x6e, 0x0b, 0x32, 0x69, 0x88, 0xa2, 0x9c, 0x42,
+	0x0e, 0x11, 0x2a, 0x2f, 0x40, 0x69, 0x7a, 0x48, 0x81, 0x52, 0x2d, 0xbc, 0x80, 0xe3, 0x8c, 0x54,
+	0x4b, 0xce, 0xda, 0xb2, 0xb7, 0x81, 0xbe, 0x01, 0x47, 0x8e, 0x88, 0x23, 0x4f, 0xc3, 0x91, 0x47,
+	0x40, 0xe1, 0x45, 0x90, 0x67, 0xe3, 0xf8, 0x27, 0xa6, 0x3d, 0xce, 0xec, 0x7c, 0xdf, 0x7c, 0xb3,
+	0xdf, 0xce, 0xc2, 0x41, 0x78, 0x3b, 0xf3, 0xbd, 0xf8, 0x66, 0x1c, 0x46, 0x81, 0x0e, 0x06, 0x3f,
+	0x19, 0x74, 0x2e, 0xbe, 0x68, 0x8c, 0x94, 0xe3, 0x9f, 0xdf, 0x38, 0x4a, 0xa1, 0x7f, 0xe6, 0xba,
+	0x18, 0xc7, 0x17, 0x4b, 0x54, 0x5a, 0x5c, 0x82, 0xc0, 0xf5, 0xa9, 0x49, 0x7f, 0xba, 0x0b, 0xd1,
+	0x66, 0x7d, 0x36, 0x7c, 0x74, 0xda, 0x19, 0x57, 0x02, 0x93, 0x0a, 0x59, 0x81, 0x12, 0x1d, 0x68,
+	0xb9, 0xbe, 0x87, 0x4a, 0x4f, 0x27, 0x76, 0xbd, 0xcf, 0x86, 0x6d, 0xb9, 0x89, 0x45, 0x17, 0xda,
+	0xae, 0x21, 0x99, 0x4e, 0x6c, 0x8b, 0x0e, 0xb3, 0xc4, 0xe0, 0x2b, 0x83, 0xe3, 0xb4, 0xd7, 0xb5,
+	0x91, 0x6f, 0xe4, 0x75, 0xa0, 0x15, 0xa3, 0x9a, 0x63, 0x34, 0x9d, 0x90, 0xa8, 0xb6, 0xdc, 0xc4,
+	0x09, 0x25, 0x26, 0x45, 0xa4, 0xd8, 0xf4, 0xcb, 0x12, 0xc2, 0x86, 0xdd, 0xd0, 0xb9, 0xf3, 0x03,
+	0x67, 0xbe, 0x6e, 0x97, 0x86, 0x09, 0x4e, 0x7b, 0x0b, 0x8c, 0xb5, 0xb3, 0x08, 0xed, 0x46, 0x9f,
+	0x0d, 0x2d, 0x99, 0x25, 0x06, 0x0b, 0x78, 0x96, 0x2a, 0xf9, 0xa0, 0x7c, 0x4f, 0xe1, 0x47, 0xed,
+	0xe8, 0xdb, 0x78, 0x23, 0x67, 0x33, 0x21, 0x2b, 0x4d, 0xf8, 0x14, 0x9a, 0x31, 0x95, 0x92, 0x96,
+	0x96, 0x5c, 0x47, 0xc5, 0x76, 0x56, 0xb9, 0xdd, 0x0f, 0x06, 0xdd, 0xb4, 0xdf, 0x65, 0xe0, 0xa9,
+	0x77, 0xe8, 0x2c, 0xf1, 0x9c, 0x38, 0x1f, 0x6e, 0x59, 0xb8, 0xd4, 0x7a, 0xe9, 0x52, 0xc5, 0x6b,
+	0xd8, 0x0f, 0x23, 0x8c, 0x51, 0xb9, 0x48, 0x57, 0x64, 0x91, 0xa9, 0xdd, 0xb2, 0xa9, 0xd7, 0xb9,
+	0x1a, 0x59, 0x40, 0x0c, 0xbe, 0x59, 0xc0, 0xd3, 0xea, 0x2b, 0xfc, 0x6c, 0x04, 0xbd, 0x80, 0x86,
+	0xce, 0xde, 0xc8, 0x93, 0x71, 0xb9, 0x80, 0x78, 0xa8, 0xc4, 0xb8, 0x17, 0x2d, 0xc9, 0xbd, 0x7a,
+	0xea, 0x9e, 0x89, 0xc5, 0x14, 0x8e, 0xb1, 0xc2, 0x71, 0x52, 0xb9, 0x97, 0xa3, 0xcd, 0x1f, 0xca,
+	0x4a, 0x88, 0xb8, 0xca, 0xa8, 0xf2, 0x96, 0x91, 0xb7, 0x7b, 0xb9, 0x57, 0xbc, 0xe5, 0xa7, 0xac,
+	0xc4, 0x89, 0xb7, 0x70, 0x88, 0x65, 0x4b, 0xec, 0x1d, 0x22, 0x7b, 0x3e, 0xbe, 0xcf, 0x2c, 0xb9,
+	0x8d, 0x13, 0xef, 0xe1, 0xa8, 0xb8, 0x2a, 0x66, 0xcc, 0x26, 0xd1, 0x9d, 0x8c, 0xff, 0xbf, 0x9a,
+	0xb2, 0x0a, 0x37, 0x9a, 0x65, 0x8b, 0x92, 0xbf, 0x70, 0xc1, 0x61, 0x3f, 0x3f, 0x03, 0xaf, 0x25,
+	0x99, 0x35, 0x29, 0x55, 0x71, 0x26, 0x8e, 0xe0, 0x71, 0xc9, 0x73, 0x5e, 0x17, 0x87, 0x70, 0x50,
+	0xe8, 0xcd, 0xad, 0xd1, 0x29, 0x9c, 0xdc, 0xf3, 0x46, 0x44, 0x0b, 0x1a, 0xc9, 0x78, 0xbc, 0x26,
+	0xda, 0xb0, 0x43, 0x43, 0x72, 0x36, 0x7a, 0x99, 0xad, 0xcd, 0xd6, 0x67, 0x21, 0x76, 0xc1, 0x3a,
+	0x9b, 0xcf, 0x79, 0x4d, 0x00, 0x34, 0x25, 0x2e, 0x82, 0x04, 0xf1, 0x86, 0xff, 0x5a, 0xf5, 0xd8,
+	0xef, 0x55, 0x8f, 0xfd, 0x59, 0xf5, 0xd8, 0xf7, 0xbf, 0xbd, 0xda, 0xac, 0x49, 0x3f, 0xd6, 0xab,
+	0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xf6, 0xf3, 0x81, 0x95, 0xc2, 0x04, 0x00, 0x00,
 }
 
-func (m *ExternalNewEvent) Marshal() (dAtA []byte, err error) {
+func (m *ExternalChannelAccessEvent) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -295,12 +509,12 @@ func (m *ExternalNewEvent) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *ExternalNewEvent) MarshalTo(dAtA []byte) (int, error) {
+func (m *ExternalChannelAccessEvent) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *ExternalNewEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *ExternalChannelAccessEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -309,39 +523,22 @@ func (m *ExternalNewEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.XXX_unrecognized)
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if m.PublishEvent != nil {
-		{
-			size, err := m.PublishEvent.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintPublish(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x22
-	}
-	if m.OnlineStatusEvent != nil {
-		{
-			size, err := m.OnlineStatusEvent.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintPublish(dAtA, i, uint64(size))
-		}
+	if len(m.ChannelID) > 0 {
+		i -= len(m.ChannelID)
+		copy(dAtA[i:], m.ChannelID)
+		i = encodeVarintPublish(dAtA, i, uint64(len(m.ChannelID)))
 		i--
 		dAtA[i] = 0x1a
 	}
-	if len(m.ServerID) > 0 {
-		i -= len(m.ServerID)
-		copy(dAtA[i:], m.ServerID)
-		i = encodeVarintPublish(dAtA, i, uint64(len(m.ServerID)))
+	if len(m.ClientID) > 0 {
+		i -= len(m.ClientID)
+		copy(dAtA[i:], m.ClientID)
+		i = encodeVarintPublish(dAtA, i, uint64(len(m.ClientID)))
 		i--
 		dAtA[i] = 0x12
 	}
-	if m.Type != 0 {
-		i = encodeVarintPublish(dAtA, i, uint64(m.Type))
+	if m.ExternalAccessType != 0 {
+		i = encodeVarintPublish(dAtA, i, uint64(m.ExternalAccessType))
 		i--
 		dAtA[i] = 0x8
 	}
@@ -450,6 +647,139 @@ func (m *ExternalOnlineStatusEvent) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	return len(dAtA) - i, nil
 }
 
+func (m *ExternalJoinLeaveClientEvent) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ExternalJoinLeaveClientEvent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ExternalJoinLeaveClientEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.PresenceType != 0 {
+		i = encodeVarintPublish(dAtA, i, uint64(m.PresenceType))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.ChannelID) > 0 {
+		i -= len(m.ChannelID)
+		copy(dAtA[i:], m.ChannelID)
+		i = encodeVarintPublish(dAtA, i, uint64(len(m.ChannelID)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.ClientID) > 0 {
+		i -= len(m.ClientID)
+		copy(dAtA[i:], m.ClientID)
+		i = encodeVarintPublish(dAtA, i, uint64(len(m.ClientID)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ExternalNewEvent) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ExternalNewEvent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ExternalNewEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.ExternalAccessEvent != nil {
+		{
+			size, err := m.ExternalAccessEvent.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPublish(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x32
+	}
+	if m.ExternalJoinLeave != nil {
+		{
+			size, err := m.ExternalJoinLeave.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPublish(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.ExternalOnlineStatus != nil {
+		{
+			size, err := m.ExternalOnlineStatus.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPublish(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.ExternalPublishEvent != nil {
+		{
+			size, err := m.ExternalPublishEvent.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPublish(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ServerID) > 0 {
+		i -= len(m.ServerID)
+		copy(dAtA[i:], m.ServerID)
+		i = encodeVarintPublish(dAtA, i, uint64(len(m.ServerID)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Type != 0 {
+		i = encodeVarintPublish(dAtA, i, uint64(m.Type))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintPublish(dAtA []byte, offset int, v uint64) int {
 	offset -= sovPublish(v)
 	base := offset
@@ -461,25 +791,21 @@ func encodeVarintPublish(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *ExternalNewEvent) Size() (n int) {
+func (m *ExternalChannelAccessEvent) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.Type != 0 {
-		n += 1 + sovPublish(uint64(m.Type))
+	if m.ExternalAccessType != 0 {
+		n += 1 + sovPublish(uint64(m.ExternalAccessType))
 	}
-	l = len(m.ServerID)
+	l = len(m.ClientID)
 	if l > 0 {
 		n += 1 + l + sovPublish(uint64(l))
 	}
-	if m.OnlineStatusEvent != nil {
-		l = m.OnlineStatusEvent.Size()
-		n += 1 + l + sovPublish(uint64(l))
-	}
-	if m.PublishEvent != nil {
-		l = m.PublishEvent.Size()
+	l = len(m.ChannelID)
+	if l > 0 {
 		n += 1 + l + sovPublish(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
@@ -537,13 +863,71 @@ func (m *ExternalOnlineStatusEvent) Size() (n int) {
 	return n
 }
 
+func (m *ExternalJoinLeaveClientEvent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ClientID)
+	if l > 0 {
+		n += 1 + l + sovPublish(uint64(l))
+	}
+	l = len(m.ChannelID)
+	if l > 0 {
+		n += 1 + l + sovPublish(uint64(l))
+	}
+	if m.PresenceType != 0 {
+		n += 1 + sovPublish(uint64(m.PresenceType))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *ExternalNewEvent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Type != 0 {
+		n += 1 + sovPublish(uint64(m.Type))
+	}
+	l = len(m.ServerID)
+	if l > 0 {
+		n += 1 + l + sovPublish(uint64(l))
+	}
+	if m.ExternalPublishEvent != nil {
+		l = m.ExternalPublishEvent.Size()
+		n += 1 + l + sovPublish(uint64(l))
+	}
+	if m.ExternalOnlineStatus != nil {
+		l = m.ExternalOnlineStatus.Size()
+		n += 1 + l + sovPublish(uint64(l))
+	}
+	if m.ExternalJoinLeave != nil {
+		l = m.ExternalJoinLeave.Size()
+		n += 1 + l + sovPublish(uint64(l))
+	}
+	if m.ExternalAccessEvent != nil {
+		l = m.ExternalAccessEvent.Size()
+		n += 1 + l + sovPublish(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
 func sovPublish(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozPublish(x uint64) (n int) {
 	return sovPublish(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *ExternalNewEvent) Unmarshal(dAtA []byte) error {
+func (m *ExternalChannelAccessEvent) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -566,17 +950,17 @@ func (m *ExternalNewEvent) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: ExternalNewEvent: wiretype end group for non-group")
+			return fmt.Errorf("proto: ExternalChannelAccessEvent: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ExternalNewEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ExternalChannelAccessEvent: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ExternalAccessType", wireType)
 			}
-			m.Type = 0
+			m.ExternalAccessType = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowPublish
@@ -586,14 +970,14 @@ func (m *ExternalNewEvent) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Type |= ExternalNewEventType(b&0x7F) << shift
+				m.ExternalAccessType |= ExternalChannelAccessType(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ServerID", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ClientID", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -621,13 +1005,13 @@ func (m *ExternalNewEvent) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ServerID = string(dAtA[iNdEx:postIndex])
+			m.ClientID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OnlineStatusEvent", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ChannelID", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowPublish
@@ -637,63 +1021,23 @@ func (m *ExternalNewEvent) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthPublish
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthPublish
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.OnlineStatusEvent == nil {
-				m.OnlineStatusEvent = &ExternalOnlineStatusEvent{}
-			}
-			if err := m.OnlineStatusEvent.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PublishEvent", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowPublish
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthPublish
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthPublish
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.PublishEvent == nil {
-				m.PublishEvent = &ExternalPublishEvent{}
-			}
-			if err := m.PublishEvent.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
+			m.ChannelID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -983,6 +1327,386 @@ func (m *ExternalOnlineStatusEvent) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipPublish(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthPublish
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ExternalJoinLeaveClientEvent) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowPublish
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ExternalJoinLeaveClientEvent: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ExternalJoinLeaveClientEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ClientID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPublish
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPublish
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPublish
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ClientID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChannelID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPublish
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPublish
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPublish
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChannelID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PresenceType", wireType)
+			}
+			m.PresenceType = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPublish
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.PresenceType |= ExternalChannelPresenceType(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipPublish(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthPublish
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ExternalNewEvent) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowPublish
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ExternalNewEvent: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ExternalNewEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
+			}
+			m.Type = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPublish
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Type |= ExternalNewEventType(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ServerID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPublish
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPublish
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPublish
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ServerID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExternalPublishEvent", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPublish
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPublish
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPublish
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.ExternalPublishEvent == nil {
+				m.ExternalPublishEvent = &ExternalPublishEvent{}
+			}
+			if err := m.ExternalPublishEvent.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExternalOnlineStatus", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPublish
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPublish
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPublish
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.ExternalOnlineStatus == nil {
+				m.ExternalOnlineStatus = &ExternalOnlineStatusEvent{}
+			}
+			if err := m.ExternalOnlineStatus.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExternalJoinLeave", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPublish
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPublish
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPublish
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.ExternalJoinLeave == nil {
+				m.ExternalJoinLeave = &ExternalJoinLeaveClientEvent{}
+			}
+			if err := m.ExternalJoinLeave.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExternalAccessEvent", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPublish
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPublish
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPublish
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.ExternalAccessEvent == nil {
+				m.ExternalAccessEvent = &ExternalChannelAccessEvent{}
+			}
+			if err := m.ExternalAccessEvent.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipPublish(dAtA[iNdEx:])

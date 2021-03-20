@@ -98,7 +98,7 @@ func (storage *PGXAppRepository) AppExists(id string) (bool, error) {
 		return false, err
 	}
 
-	return exists >= 2, nil
+	return exists >= 1, nil
 }
 
 // NewSQLPGXAppRepository - Create a new instance of SQLPGXAppRepository

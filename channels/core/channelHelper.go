@@ -131,7 +131,11 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 			Timestamp: time.Now().Unix(),
 			EventType: "Join",
 			ChannelID: channelID,
-			Payload:   clientID,
+		}
+
+		clientJoined := ClientJoin{
+			ChannelID:            channelID,
+			ClientID:             clientID,
 		}
 
 		// Store and cache new event
@@ -145,8 +149,13 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 			channel := hub.ContainsChannel(channelID)
 
 			if channel != nil {
-				// Publish to local clients only, we send to other servers after
-				channel.ExternalPublish(NewEvent_PUBLISH, newChannelEvent)
+
+				if data, err := clientJoined.Marshal(); err == nil {
+					// Publish to local clients only, we send to other servers after
+					channel.PublishJoinLeave(NewEvent_JOIN_CHANNEL, data)
+				} else {
+					_, _ = fmt.Fprintf(os.Stderr, "Join channel: failed to marshal join client event %v\n", err)
+				}
 			}
 
 		}
@@ -154,6 +163,14 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 		// Then we publish to other servers
 		GetEngine().GetPublisher().PublishChannelEvent(appID, channelID, newChannelEvent)
 	}
+
+	if channel.Presence {
+		// Publish presence event to other servers
+		GetEngine().GetPublisher().PublishChannelPresenceChange(appID, channelID, clientID, true)
+	}
+
+	// Notify clientID in other servers that he received access to channel
+	GetEngine().GetPublisher().PublishChannelAccessChange(appID, channelID, clientID, true)
 
 	return true, err
 }
@@ -215,15 +232,22 @@ func LeaveChannel(appID string, channelID string, clientID string) (bool, error)
 		GetEngine().StoreEvent(channel.AppID, newChannelEvent)
 		GetEngine().GetCacheStorage().StoreChannelEvent(channelID, appID, newChannelEvent)
 
+		clientLeave := &ClientLeave{
+			ChannelID:            channelID,
+			ClientID:             clientID,
+		}
+
 		// If there are clients connected to hub and channel
 		// Then publish to them, otherwise there is no point
 		// But we still need to publish to other servers
 		if hub != nil {
 			channel := hub.ContainsChannel(channelID)
 
-			if channel != nil {
+			if data, err := clientLeave.Marshal(); err == nil {
 				// Publish to local clients only, we send to other servers after
-				channel.ExternalPublish(NewEvent_PUBLISH, newChannelEvent)
+				channel.PublishJoinLeave(NewEvent_LEAVE_CHANNEL, data)
+			} else {
+				_, _ = fmt.Fprintf(os.Stderr, "Leave channel: failed to marshal leave client event %v\n", err)
 			}
 
 		}
@@ -231,6 +255,14 @@ func LeaveChannel(appID string, channelID string, clientID string) (bool, error)
 		// Then we publish to other servers
 		GetEngine().GetPublisher().PublishChannelEvent(appID, channelID, newChannelEvent)
 	}
+
+	if channel.Presence {
+		// Publish presence event to other servers
+		GetEngine().GetPublisher().PublishChannelPresenceChange(appID, channelID, clientID, false)
+	}
+
+	// Notify clientID in other servers that he lost access to channel
+	GetEngine().GetPublisher().PublishChannelAccessChange(appID, channelID, clientID, false)
 
 	return true, err
 }

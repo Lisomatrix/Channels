@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+//.\protoc-3.14.0-win64\bin\protoc.exe --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd  --ts_proto_out="go_src" ./publisher.proto 
+//.\protoc-3.14.0-win64\bin\protoc.exe --go_out="go_src" ./chat.proto
+
+enum ExternalNewEventType {
+    OnlineStatus = 0;
+    ChannelEvent = 1;
+    ChannelPresence = 2;
+    ChannelAccess = 3;
+}
+
+enum ExternalChannelPresenceType {
+    Join = 0;
+    Leave = 1;
+}
+
+enum ExternalChannelAccessType {
+    Add = 0;
+    Remove = 1;
+}
+
+message ExternalChannelAccessEvent {
+    ExternalChannelAccessType externalAccessType = 1;
+    string clientID = 2;
+    string channelID = 3;
+}
+
+message ExternalPublishEvent {
+    string senderID = 1;
+    string eventType = 2;
+    string payload = 3;
+    int64 timestamp = 4;
+}
+
+message ExternalOnlineStatusEvent {
+    string clientID = 1;
+    bool status = 2;
+    int64 timestamp = 3;
+}
+
+message ExternalJoinLeaveClientEvent {
+    string clientID = 1;
+    string channelID = 2;
+    ExternalChannelPresenceType presenceType = 3;
+}
+
+message ExternalNewEvent {
+    ExternalNewEventType type = 1;
+    string serverID = 2;
+    ExternalPublishEvent externalPublishEvent = 3;
+    ExternalOnlineStatusEvent externalOnlineStatus = 4;
+    ExternalJoinLeaveClientEvent externalJoinLeave = 5;
+    ExternalChannelAccessEvent externalAccessEvent = 6;
+}

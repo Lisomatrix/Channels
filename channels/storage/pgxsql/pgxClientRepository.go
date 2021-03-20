@@ -19,7 +19,7 @@ var selectAppClientSQL = `SELECT "ID", "Username", "AppID", "Extra" FROM "Client
 var selectAppClientExistsSQL = `SELECT COUNT("ID") FROM "Client" WHERE "AppID" = $1 AND "ID" = $2 LIMIT 1;`
 var selectAppClientsAmountSQL = `SELECT COUNT("ID") FROM "Client" WHERE "AppID" = $1;`
 var selectAllClientsSQL = `SELECT "ID", "Username", "AppID", "Extra" FROM "Client";`
-var selectAllClientsAmountSQL = `SELECT COUNT("ID") FROM "Client";`
+var selectAllClientsAmountSQL = `SELECT COUNT("ID") AS "AMOUNT" FROM "Client";`
 var selectClientExtraSQL = `SELECT "Extra" FROM "Client" WHERE "ID" = $1;`
 
 // PGXClientRepository - SQL implementation of client repository
@@ -37,7 +37,7 @@ func (repo *PGXClientRepository) ExistsAppClient(AppID string, ClientID string) 
 	err := row.Scan(&found)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAppClient: row scan failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetAppClient: row scan failed: %v\n", err)
 		return false, err
 	}
 
@@ -63,6 +63,11 @@ func (repo *PGXClientRepository) GetAppClient(AppID string, ClientID string) (*c
 	}
 
 	if err != nil {
+		// TODO: Need a better fix for this
+		if err.Error() == "no rows in result set" {
+			return nil, nil
+		}
+
 		_, _ = fmt.Fprintf(os.Stderr, "GetAppClient: row scan failed: %v\n", err)
 		return nil, err
 	}

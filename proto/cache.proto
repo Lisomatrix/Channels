@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+//.\protoc-3.14.0-win64\bin\protoc.exe --go_out="go_src" ./cache.proto
+
+message CachedChannelEvent {
+    string senderID = 1;
+    string eventType = 2;
+    string payload = 3;
+    int64 timestamp = 5;
+}
+
+message CachedClient {
+    string username = 1;
+    string extra = 2;
+}
+
+message CachedChannel {
+    string name     = 1;
+    int64 createdAt = 2;
+    bool isClosed   = 3;
+    string extra    = 4;
+    bool persistent = 5;
+    bool private    = 6;
+    bool presence   = 7;
+}
+
+message CachedDevice {
+    string id = 1;
+    string token = 2;
+}
