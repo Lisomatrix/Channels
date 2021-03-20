@@ -39,10 +39,8 @@ func corsMiddleware() gin.HandlerFunc {
 }
 
 // Start channel server, make sure you configured the Engine first
-func Start(host string, port string) {
+func Start(host string, port string, router *gin.Engine) {
 	gin.SetMode(gin.ReleaseMode)
-
-	router := gin.Default()
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 	router.Use(corsMiddleware())
@@ -108,5 +106,5 @@ func InitEngineAndStart(host string, port string) {
 
 	dbStorage := pgxsql.NewSQLStorageDatabase()
 	core.InitEngine(dbStorage, cache.NewRedisCacheStorage(), publisher.NewRedisPublisher(), presence.NewRedisPresence())
-	Start(host, port)
+	Start(host, port, gin.Default())
 }

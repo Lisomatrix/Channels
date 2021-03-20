@@ -167,7 +167,7 @@ func (session *Session) onClose() {
 
 func (session *Session) onNewMessage(data []byte) {
 	var newEvent NewEvent
-	fmt.Printf("Received event with size: %s \n", len(data))
+
 	err := newEvent.Unmarshal(data)
 
 
@@ -180,7 +180,6 @@ func (session *Session) onNewMessage(data []byte) {
 
 		var channelSub SubscribeRequest
 
-		//err = json.Unmarshal([]byte(newEvent.Payload), &channelSub)
 		err = channelSub.Unmarshal(newEvent.Payload)
 
 		if err != nil {
