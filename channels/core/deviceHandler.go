@@ -1,8 +1,8 @@
 package core
 
 import (
-	"encoding/json"
 	"fmt"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/lisomatrix/channels/channels/auth"
 	"io/ioutil"
 	"net/http"
@@ -16,7 +16,7 @@ type createDeviceRequest struct {
 	Token    string `json:"token"`
 }
 
-type updateDeviceReques struct {
+type updateDeviceRequest struct {
 	Token string `json:"token"`
 }
 
@@ -54,6 +54,7 @@ func CreateDevice(context *gin.Context) {
 	// Parse body
 	var createDeviceRequest createDeviceRequest
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &createDeviceRequest)
 
 	if err != nil {
@@ -68,7 +69,7 @@ func CreateDevice(context *gin.Context) {
 		device, err := GetEngine().GetDeviceRepository().GetDevice(createDeviceRequest.DeviceID)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "HTTP Create Device: failed to check device existence %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "HTTP Create Device: failed to check device existence %v\n", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -95,7 +96,7 @@ func CreateDevice(context *gin.Context) {
 	err = GetEngine().GetDeviceRepository().CreateDevice(device.ID, device.Token, device.ClientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Create Device: failed to create device %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Create Device: failed to create device %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -140,7 +141,7 @@ func RemoveDevice(context *gin.Context) {
 	device, err := GetEngine().GetDeviceRepository().GetDevice(deviceID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Delete Device: failed to check device existence %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Delete Device: failed to check device existence %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -160,7 +161,7 @@ func RemoveDevice(context *gin.Context) {
 	err = GetEngine().GetDeviceRepository().DeleteDevice(deviceID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP DELETE Device: failed to delete device %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP DELETE Device: failed to delete device %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}

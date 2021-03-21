@@ -35,6 +35,7 @@ type WebSocketConnection struct {
 	ws                 *websocket.Conn
 	onCloseCB          func()
 	onMessage          func([]byte)
+	onHB			   func()
 	isClosed           bool
 }
 
@@ -77,6 +78,10 @@ func (connection *WebSocketConnection) SetOnMessage(cb func([]byte)) {
 // SetOnClose - Set on closed connection handler
 func (connection *WebSocketConnection) SetOnClose(cb func()) {
 	connection.onCloseCB = cb
+}
+
+func (connection *WebSocketConnection) SetOnHeartBeat(cb func()) {
+	connection.onHB = cb
 }
 
 // Close - Close the current connection

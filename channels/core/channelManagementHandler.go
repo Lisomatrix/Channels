@@ -1,7 +1,7 @@
 package core
 
 import (
-	"encoding/json"
+	jsoniter "github.com/json-iterator/go"
 	"fmt"
 	"github.com/lisomatrix/channels/channels/auth"
 	"io/ioutil"
@@ -86,6 +86,7 @@ func PostEventHandler(context *gin.Context) {
 	// Parse body
 	var channelPublishRequest channelPublishRequest
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &channelPublishRequest)
 
 	if err != nil {
@@ -189,6 +190,7 @@ func CreateChannelHandler(context *gin.Context) {
 	// Parse body
 	var createChannelRequest CreateChannelRequest
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &createChannelRequest)
 
 	if err != nil {
@@ -391,7 +393,7 @@ func DeleteChannelHandler(context *gin.Context) {
 	}
 
 	if isOK, err := DeleteChannel(appID, channelID); err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Delete channel: failed to delete channel %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Delete channel: failed to delete channel %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 	} else if isOK {
 		writer.WriteHeader(http.StatusOK)
@@ -432,7 +434,7 @@ func PostCloseChannel(context *gin.Context) {
 	}
 
 	if isOK, err := SetChannelCloseStatus(appID, channelID, true); err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Close channel: failed to close channel %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Close channel: failed to close channel %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 	} else if isOK {
 		writer.WriteHeader(http.StatusOK)
@@ -473,7 +475,7 @@ func PostOpenChannel(context *gin.Context) {
 	}
 
 	if isOK, err := SetChannelCloseStatus(appID, channelID, false); err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Open channel: failed to open channel %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Open channel: failed to open channel %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 	} else if isOK {
 		writer.WriteHeader(http.StatusOK)
@@ -518,7 +520,7 @@ func GetOpenChannels(context *gin.Context) {
 	if appID != "" && identity.CanUseAppID(appID) {
 
 		if channels, err := GetEngine().GetChannelRepository().GetAppPublicChannels(appID); err != nil {
-			fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get app open channels %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get app open channels %v\n", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 		} else {
 			response.Channels = channels
@@ -529,7 +531,7 @@ func GetOpenChannels(context *gin.Context) {
 	} else if appID == "" && identity.IsSuperAdmin() {
 
 		if channels, err := GetEngine().GetChannelRepository().GetAllPublicChannels(); err != nil {
-			fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get all open channels %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get all open channels %v\n", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 		} else {
 			response.Channels = channels
@@ -540,6 +542,7 @@ func GetOpenChannels(context *gin.Context) {
 		return
 	}
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(response)
 
 	if err != nil {
@@ -582,7 +585,7 @@ func GetPrivateChannels(context *gin.Context) {
 	if appID != "" && identity.CanUseAppID(appID) && identity.IsAdminKind() {
 
 		if channels, err := GetEngine().GetChannelRepository().GetAppPrivateChannels(appID); err != nil {
-			fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get app open channels %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get app open channels %v\n", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 		} else {
 			response.Channels = channels
@@ -593,7 +596,7 @@ func GetPrivateChannels(context *gin.Context) {
 	} else if appID != "" && identity.CanUseAppID(appID) && identity.IsClient() {
 
 		if channels, err := GetEngine().GetChannelRepository().GetClientPrivateChannels(identity.ClientID); err != nil {
-			fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get app open channels %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get app open channels %v\n", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 		} else {
 			response.Channels = channels
@@ -604,7 +607,7 @@ func GetPrivateChannels(context *gin.Context) {
 	} else if appID == "" && identity.IsSuperAdmin() {
 
 		if channels, err := GetEngine().GetChannelRepository().GetAllPrivateChannels(); err != nil {
-			fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get all open channels %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get all open channels %v\n", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 		} else {
 			response.Channels = channels
@@ -615,14 +618,15 @@ func GetPrivateChannels(context *gin.Context) {
 		return
 	}
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(response)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to marshal response %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to marshal response %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	writer.WriteHeader(http.StatusOK)
-	writer.Write(data)
+	_, _ = writer.Write(data)
 }

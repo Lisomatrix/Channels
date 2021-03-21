@@ -2,7 +2,7 @@
 package core
 
 import (
-	"encoding/json"
+	jsoniter "github.com/json-iterator/go"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -61,6 +61,7 @@ func CreateApp(context *gin.Context) {
 	// Parse body
 	var createAppRequest createAppRequest
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &createAppRequest)
 
 	if err != nil {
@@ -76,7 +77,7 @@ func CreateApp(context *gin.Context) {
 		exists, err := GetEngine().GetAppRepository().AppExists(createAppRequest.AppID)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "HTTP Create App: failed to check app existence %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "HTTP Create App: failed to check app existence %v\n", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -94,7 +95,7 @@ func CreateApp(context *gin.Context) {
 	GetEngine().GetCacheStorage().StoreApp(createAppRequest.AppID, createAppRequest.Name)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Create App: failed to create app %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Create App: failed to create app %v\n", err)
 		writer.WriteHeader(http.StatusConflict)
 		return
 	}
@@ -194,6 +195,7 @@ func UpdateApp(context *gin.Context) {
 	// Parse body
 	var updateAppRequest updateAppRequest
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &updateAppRequest)
 
 	if err != nil {
@@ -210,7 +212,7 @@ func UpdateApp(context *gin.Context) {
 		exists, err := GetEngine().GetAppRepository().AppExists(appID)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "HTTP Update App: failed to check app existence %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "HTTP Update App: failed to check app existence %v\n", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -226,7 +228,7 @@ func UpdateApp(context *gin.Context) {
 	err = GetEngine().GetAppRepository().UpdateApp(appID, updateAppRequest.Name)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Update App: failed to update app %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Update App: failed to update app %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -279,6 +281,7 @@ func GetApps(context *gin.Context) {
 
 	response := getAppsResponse{Apps: apps}
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(response)
 
 	if err != nil {

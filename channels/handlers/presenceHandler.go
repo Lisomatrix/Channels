@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"encoding/json"
+	jsoniter "github.com/json-iterator/go"
 	"fmt"
 	"github.com/lisomatrix/channels/channels/auth"
 	"github.com/lisomatrix/channels/channels/core"
@@ -57,7 +57,7 @@ func GetClientOnlineDevices(context *gin.Context) {
 	devices, err := core.GetEngine().GetPresence().GetClientOnlineDevices(clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Presence: failed to marshal response %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Presence: failed to marshal response %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -66,16 +66,17 @@ func GetClientOnlineDevices(context *gin.Context) {
 		OnlineDeviceIDs: devices,
 	}
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(&response)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Presence: failed to marshal response %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Presence: failed to marshal response %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	writer.WriteHeader(http.StatusOK)
-	writer.Write(data)
+	_, _ = writer.Write(data)
 }
 
 // GetClientDevicesPresences - Get all client devices presence
@@ -116,7 +117,7 @@ func GetClientDevicesPresences(context *gin.Context) {
 	devices, err := core.GetEngine().GetPresence().GetClientDevicesPresences(clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Presence: failed to fetch client online devices %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Presence: failed to fetch client online devices %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -125,14 +126,15 @@ func GetClientDevicesPresences(context *gin.Context) {
 		Devices: devices,
 	}
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(&response)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Presence: failed to marshal response %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Presence: failed to marshal response %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	writer.WriteHeader(http.StatusOK)
-	writer.Write(data)
+	_, _ = writer.Write(data)
 }

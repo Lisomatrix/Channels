@@ -1,8 +1,8 @@
 package core
 
 import (
-	"encoding/json"
 	"fmt"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/lisomatrix/channels/channels/auth"
 	"io/ioutil"
 	"net/http"
@@ -61,6 +61,7 @@ func CreateClientHandler(context *gin.Context) {
 	// Parse body
 	var createClientRequest createClientRequest
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &createClientRequest)
 
 	if err != nil {
@@ -71,14 +72,14 @@ func CreateClientHandler(context *gin.Context) {
 	existingClient, err := GetClient(appID, createClientRequest.ClientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Create Client failed to check if client already exists %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Create Client failed to check if client already exists %v\n", err)
 	} else if existingClient != nil {
 		writer.WriteHeader(http.StatusConflict)
 		return
 	}
 
 	if isOK, err := CreateClient(appID, createClientRequest.ClientID, createClientRequest.Username, createClientRequest.Extra); err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Create Client failed %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Create Client failed %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 	} else if isOK {
 		writer.WriteHeader(http.StatusOK)
@@ -119,7 +120,7 @@ func DeleteClientHandler(context *gin.Context) {
 	}
 
 	if isOK, err := DeleteClient(appID, clientID); err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Delete Client: failed to delete client %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Delete Client: failed to delete client %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 	} else if isOK {
 		writer.WriteHeader(http.StatusOK)
@@ -163,6 +164,7 @@ func UpdateClientHandler(context *gin.Context) {
 	// Parse body
 	var updateClientRequest updateClientRequest
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &updateClientRequest)
 
 	if err != nil {
@@ -180,7 +182,7 @@ func UpdateClientHandler(context *gin.Context) {
 	exists, err := GetEngine().GetClientRepository().ExistsAppClient(appID, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Update Client: failed to check client existence %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Update Client: failed to check client existence %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -193,7 +195,7 @@ func UpdateClientHandler(context *gin.Context) {
 	err = GetEngine().GetClientRepository().UpdateClient(clientID, updateClientRequest.Username, updateClientRequest.Extra)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Update Client failed %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Update Client failed %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -233,7 +235,7 @@ func GetClients(context *gin.Context) {
 		clients, err := GetEngine().GetClientRepository().GetAppClients(appID)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "HTTP Get app clients failed %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get app clients failed %v\n", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -243,7 +245,7 @@ func GetClients(context *gin.Context) {
 		clients, err := GetEngine().GetClientRepository().GetAllClients()
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "HTTP Get all clients failed %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get all clients failed %v\n", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -254,15 +256,16 @@ func GetClients(context *gin.Context) {
 		return
 	}
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(getClientsResponse)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get all clients: Marshal failed %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get all clients: Marshal failed %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	writer.Write(data)
+	_, _ = writer.Write(data)
 	writer.WriteHeader(http.StatusOK)
 }
 
@@ -300,19 +303,20 @@ func GetClientHandler(context *gin.Context) {
 	client, err := GetClient(appID, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get Client failed %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get Client failed %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(client)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get Client: failed to marshal response %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get Client: failed to marshal response %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	writer.Write(data)
+	_, _ = writer.Write(data)
 	writer.WriteHeader(http.StatusOK)
 }

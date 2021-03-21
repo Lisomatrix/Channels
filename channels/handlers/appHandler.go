@@ -2,7 +2,7 @@
 package handlers
 
 import (
-	"encoding/json"
+	jsoniter "github.com/json-iterator/go"
 	"io/ioutil"
 	"net/http"
 
@@ -54,6 +54,7 @@ func CreateAppHandler(context *gin.Context) {
 	var createRequest createAppRequest
 
 	// Parse body
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &createRequest)
 
 	// If there is and error, then body is invalid

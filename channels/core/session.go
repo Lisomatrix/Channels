@@ -20,12 +20,6 @@ func RemoveChannelIndex(s []*HubChannel, index int) []*HubChannel {
 	return append(s[:index], s[index+1:]...)
 }
 
-// ChannelSubscribe - Request payload
-type channelSubscribe struct {
-	Channel string
-	ID      int
-}
-
 // Session - an updated session handling
 type Session struct {
 	ID                 string
@@ -38,10 +32,11 @@ type Session struct {
 	hub                *Hub // Hub for the client AppID
 	SubscribedChannels []*HubChannel
 	AllowedChannels    []string
+	SessionIdentifier  string // We create a string once and store now, instead of creating every time
 }
 
 // Init - initialize properties and start sending messages
-func (session *Session) Init(connection Connection, deviceID string, identity *auth.Identity, clientID string /*client *Client*/, hub *Hub) {
+func (session *Session) Init(connection Connection, deviceID string, identity *auth.Identity, clientID string, hub *Hub) {
 
 	// Fetch channels from cache
 	channelIds, found := GetEngine().GetCacheStorage().GetClientChannels(identity.ClientID)
@@ -73,17 +68,18 @@ func (session *Session) Init(connection Connection, deviceID string, identity *a
 	// Connection
 	session.connection = connection
 	// Client info
-	//session.client = client
 	session.clientID = clientID
 	session.identity = identity
 	// App
 	session.hub = hub
 	// Session ID
 	session.ID = xid.New().String()
+	session.SessionIdentifier = session.clientID + "-" + session.deviceID
 
 	// Set handlers
 	connection.SetOnMessage(session.onNewMessage)
 	connection.SetOnClose(session.onClose)
+	connection.SetOnHeartBeat(session.onHeartBeat)
 
 	// Update user device online status
 	GetEngine().GetPresence().AddDevice(clientID, deviceID)
@@ -102,7 +98,7 @@ func (session *Session) AddChannel(channelID string) {
 	data, err := newEvent.Marshal()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Session Add channel: failed to marhal new event: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Session Add channel: failed to marhal new event: %v\n", err)
 	}
 
 	session.connection.Send(data)
@@ -156,6 +152,10 @@ func (session *Session) Publish(data []byte) {
 
 	//session.connection.Send(data)
 	session.connection.Send(data)
+}
+
+func (session *Session) onHeartBeat()  {
+	GetEngine().GetPresence().UpdateDeviceTimestamp(session.clientID, session.deviceID)
 }
 
 func (session *Session) onClose() {
@@ -267,7 +267,7 @@ func (session *Session) CanPublish(channelID string, event *ChannelEvent, publis
 
 // GetIdentifier - Get client and device identifier
 func (session *Session) GetIdentifier() string {
-	return session.clientID + "-" + session.deviceID
+	return session.SessionIdentifier
 }
 
 // CanSubscribe - Check if user is allowed to subscribe, if so susbcribe

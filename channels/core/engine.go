@@ -116,7 +116,7 @@ const (
 	CacheLimit   = 50 // Amount of insert before batching
 	CacheTimeout = 5 * time.Second
 )
-/*
+
 func startInsertingQueue(queue *StorageInsertQueue, repo ChannelRepository) {
 
 	cache := make([]InsertItem, 0, CacheLimit)
@@ -155,8 +155,8 @@ func startInsertingQueue(queue *StorageInsertQueue, repo ChannelRepository) {
 			cache = cache[:0]
 		}
 	}
-}*/
-
+}
+/*
  func startInsertingQueue(queue *StorageInsertQueue, repo ChannelRepository) {
 
  	for {
@@ -176,3 +176,4 @@ func startInsertingQueue(queue *StorageInsertQueue, repo ChannelRepository) {
  		}
  	}
 }
+*/

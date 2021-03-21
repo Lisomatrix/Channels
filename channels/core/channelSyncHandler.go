@@ -1,7 +1,7 @@
 package core
 
 import (
-	"encoding/json"
+    jsoniter "github.com/json-iterator/go"
 	"fmt"
 	"github.com/lisomatrix/channels/channels/auth"
 	"net/http"
@@ -86,6 +86,7 @@ func GetMessagesBetweenTimeStamps(context *gin.Context) {
 	// Prepare response
 	response := getChannelEventsResponse{Events: events}
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(response)
 
 	if err != nil {
@@ -167,6 +168,7 @@ func GetMessagesSinceTimeStamp(context *gin.Context) {
 	// Prepare response
 	response := getChannelEventsResponse{Events: events}
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(response)
 
 	if err != nil {
@@ -260,6 +262,7 @@ func GetLastMessagesSinceTimeStamp(context *gin.Context) {
 	// Prepare response
 	response := getChannelEventsResponse{Events: events}
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(response)
 
 	if err != nil {
@@ -362,6 +365,7 @@ func GetLastMessages(context *gin.Context) {
 	// Prepare response
 	response := getChannelEventsResponse{Events: events}
 
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(response)
 
 	if err != nil {

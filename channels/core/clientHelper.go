@@ -17,8 +17,12 @@ func GetClient(appID string, clientID string) (*Client, error) {
 	client, err := GetEngine().GetClientRepository().GetAppClient(appID, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Get client failed %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Get client failed %v\n", err)
 		return nil, err
+	}
+
+	if client == nil {
+		return nil, nil
 	}
 
 	GetEngine().GetCacheStorage().StoreClient(appID, clientID, client)

@@ -80,7 +80,7 @@ func (storage *PGXDatabaseStorage) GetChannelRepository() core.ChannelRepository
 	return channelStorage
 }
 
-// NewSQLStorageDatabase - Create new SQLStorageDatabase implementation with postgre specific driver
+// NewSQLStorageDatabase - Create new SQLStorageDatabase implementation with postgre specific driver, it also works with YugaByteDB tested it
 func NewSQLStorageDatabase() *PGXDatabaseStorage {
 
 	poolConfig, err := pgxpool.ParseConfig(dataSourceName)

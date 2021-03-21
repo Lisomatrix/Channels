@@ -7,6 +7,7 @@ type Connection interface {
 	SendText([]byte)
 	SetOnMessage(func([]byte))
 	SetOnClose(func())
+	SetOnHeartBeat(func())
 	Close()
 	IsConnected() bool
 }
