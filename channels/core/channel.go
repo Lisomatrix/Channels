@@ -218,7 +218,6 @@ func (channel *HubChannel) PublishStatusChange(statusUpdate *OnlineStatusUpdate)
 
 	// * We parse the message here, so
 	// * we avoid parsing for each connection
-	//statusUpdateData, err := json.Marshal(statusUpdate)
 	statusUpdateData, err := statusUpdate.Marshal()
 
 	if err != nil {
@@ -338,7 +337,7 @@ func (channel *HubChannel) shouldNotifyOnlinePresenceChange(session *Session) {
 		statusUpdate := OnlineStatusUpdate{
 			ChannelID: channel.Data.ID,
 			ClientID:  session.clientID,
-			Status:    true, // If not remove is online
+			Status:    true,
 			Timestamp: timeStamp,
 		}
 
@@ -349,9 +348,6 @@ func (channel *HubChannel) shouldNotifyOnlinePresenceChange(session *Session) {
 // shouldNotifyOfflinePresenceChange - Check if an offline status update should be done
 func (channel *HubChannel) shouldNotifyOfflinePresenceChange(session *Session) {
 
-	// Remove this devices from channel online devices
-	GetEngine().GetPresence().RemoveOnlineChannelDevice(channel.Data.AppID, channel.Data.ID, session.clientID, session.deviceID)
-
 	// Set a timer of X seconds
 	// To prevent device on reconnecting to constantly change online status
 	go func() {
@@ -360,6 +356,10 @@ func (channel *HubChannel) shouldNotifyOfflinePresenceChange(session *Session) {
 
 		// wait for timer
 		<-timer.C
+
+		// Delay the deletion of the device in the channel, otherwise on shouldNotifyOnline detects 0 devices and sets as online
+		// Remove this devices from channel online devices
+		GetEngine().GetPresence().RemoveOnlineChannelDevice(channel.Data.AppID, channel.Data.ID, session.clientID, session.deviceID)
 
 		// Check if the remove device is connected
 		// If so then it reconnected and there is no need to publish the status update

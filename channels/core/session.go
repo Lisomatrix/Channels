@@ -84,6 +84,7 @@ func (session *Session) Init(connection Connection, deviceID string, identity *a
 	// Update user device online status
 	GetEngine().GetPresence().AddDevice(clientID, deviceID)
 	GetEngine().GetPresence().SetDeviceOnline(session.clientID, session.deviceID)
+	GetEngine().GetPresence().UpdateClientTimestamp(session.clientID)
 }
 
 // AddChannel - Add channel while client is connected
@@ -155,7 +156,21 @@ func (session *Session) Publish(data []byte) {
 }
 
 func (session *Session) onHeartBeat()  {
+	// Update timestamps
+	if session.isClosed {
+		return
+	}
+
+	// Update device timestamp
 	GetEngine().GetPresence().UpdateDeviceTimestamp(session.clientID, session.deviceID)
+
+	// Update timestamp on all channels with session
+	for _, c := range session.SubscribedChannels {
+
+		if c.Data.Presence {
+			GetEngine().GetPresence().AddOnlineChannelDevice(c.Data.AppID, c.Data.ID, session.clientID, session.deviceID)
+		}
+	}
 }
 
 func (session *Session) onClose() {
@@ -270,7 +285,7 @@ func (session *Session) GetIdentifier() string {
 	return session.SessionIdentifier
 }
 
-// CanSubscribe - Check if user is allowed to subscribe, if so susbcribe
+// CanSubscribe - Check if user is allowed to subscribe, if so subscribe
 func (session *Session) CanSubscribe(channelID string) bool {
 
 	for _, c := range session.AllowedChannels {

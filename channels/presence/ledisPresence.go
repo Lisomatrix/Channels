@@ -18,6 +18,35 @@ type LedisPresence struct {
 	client *ledis.DB
 }
 
+func (presence *LedisPresence) UpdateClientTimestamp(clientID string) {
+	key := []byte("client:" + clientID + ":hb")
+	err := presence.client.Set(key, []byte(strconv.FormatInt(time.Now().Unix(), 10)))
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "LedisPresence: failed to get update client last heartbeat %v\n", err)
+	}
+
+	_, _ = presence.client.ExpireAt(key, int64((time.Minute * 1).Seconds()))
+}
+func (presence *LedisPresence) GetClientTimestamp(clientID string) int64 {
+	data, err := presence.client.Get([]byte("client:" + clientID + ":hb"))
+
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "LedisPresence: failed to get get client last heartbeast %v\n", err)
+		return 0
+	}
+
+	timestamp, err := strconv.ParseInt(string(data), 10, 64)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "LedisPresence: failed to convert timestamp %v\n", err)
+		return 0
+	}
+
+	return timestamp
+}
+
 // GetChannelClientsPresence - Get channel current presence data
 func (presence *LedisPresence) GetChannelClientsPresence(appID string, channelID string) map[string]int64 {
 	devicesPresences, err := presence.client.HGetAll([]byte(appID+":channel:"+channelID+":presence"))

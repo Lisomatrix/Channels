@@ -6,3 +6,5 @@ config.yaml
 *.exe
 
 var/
+
+config_remote_postgres.yaml

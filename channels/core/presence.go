@@ -29,4 +29,7 @@ type PresenceHandler interface {
 	// Last timestamps
 	GetClientDevicesPresences(clientID string) ([]*LastDevicePresence, error)
 	UpdateDeviceTimestamp(clientID string, deviceID string)
+	// Client timestamps for heart beasts
+	UpdateClientTimestamp(clientID string)
+	GetClientTimestamp(clientID string) int64
 }

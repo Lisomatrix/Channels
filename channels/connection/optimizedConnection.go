@@ -179,11 +179,12 @@ func (connection *OWebSocketConnection) writeMessages() {
 
 				} else {
 
+					/*
 					// If we can't send a ping then it's probably closed
 					_, _ = connection.ws.Write(ws.CompiledPing)
 
 					waitingForPong = true
-					pingPongTimer.Reset(pongWait)
+					pingPongTimer.Reset(pongWait)*/
 				}
 			}
 		}

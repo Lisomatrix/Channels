@@ -20,6 +20,40 @@ type RedisPresence struct {
 	ctx    context.Context
 }
 
+func (presence *RedisPresence) setDeviceOnline(appID string, channelID string, clientID string, deviceID string) {
+	presence.client.Set(presence.ctx, appID+":channel:"+channelID+":client: " + clientID + "presence", deviceID, 20 * time.Second)
+}
+
+//presence.client.Set(presence.ctx, appID+":channel:"+channelID+":client: " + clientID + "presence", deviceID, 20 * time.Second)
+func (presence *RedisPresence) UpdateClientTimestamp(clientID string) {
+	key := "client:" + clientID + ":hb"
+
+	cmd := presence.client.Set(presence.ctx, key, time.Now().Unix(), time.Minute * 3)
+
+	if cmd.Err() != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "LedisPresence: failed to get update client last heartbeat %v\n", cmd.Err())
+	}
+}
+func (presence *RedisPresence) GetClientTimestamp(clientID string) int64 {
+	cmd := presence.client.Get(presence.ctx, "client:" + clientID + ":hb")
+
+	data, err := cmd.Result()
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "LedisPresence: failed to get get client last heartbeast %v\n", err)
+		return 0
+	}
+
+	timestamp, err := strconv.ParseInt(data, 10, 64)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "LedisPresence: failed to convert timestamp %v\n", err)
+		return 0
+	}
+
+	return timestamp
+}
+
 // GetChannelClientsPresence - Get channel current presence data
 func (presence *RedisPresence) GetChannelClientsPresence(appID string, channelID string) map[string]int64 {
 	cmd := presence.client.HGetAll(presence.ctx, appID+":channel:"+channelID+":presence")
@@ -108,7 +142,8 @@ func (presence *RedisPresence) RemoveOnlineChannelDevice(appID string, channelID
 // GetChannelAmountOfClientDevices - Get how many client devices are subscribed to this channel
 func (presence *RedisPresence) GetChannelAmountOfClientDevices(appID string, channelID string, clientID string) int64 {
 	// HSCAN channel:{channelID}:presence 0 match {clientID}:*
-	cmd := presence.client.HScan(presence.ctx, appID+":channel:"+channelID+":presence", 0, clientID+":*", 0)
+	key := appID+":channel:"+channelID+":presence"
+	cmd := presence.client.HScan(presence.ctx, key, 0, clientID+":*", 0)
 
 	if cmd.Err() != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "RedisPresence: failed to get client devices connected to channel %v\n", cmd.Err())
@@ -122,7 +157,43 @@ func (presence *RedisPresence) GetChannelAmountOfClientDevices(appID string, cha
 		return 0
 	}
 
-	return int64(len(result) - 1)
+	var amount int64 = 0
+	now := time.Now()
+
+	keys := make([]string, 0)
+	lastKey := ""
+
+	for _, value := range result {
+
+		if strings.ContainsAny(value, ":") {
+			lastKey = value
+			continue
+		}
+
+		timestamp, err := strconv.ParseInt(value, 10, 64)
+
+		if err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "RedisPresence: failed to parse timestamp %v\n", cmd.Err())
+			return 0
+		}
+		lastTimestamp := time.Unix(timestamp, 0)
+
+		passedTime := now.Sub(lastTimestamp)
+
+		// If more than 1.2 minutes passed, then we need to delete the value
+		// We need this to remove device data that could not be deleted cuz a server wen't down
+		if passedTime.Minutes() > 1.2 {
+			keys = append(keys, lastKey)
+		} else {
+			amount++
+		}
+	}
+
+	if len(keys) > 0 {
+		presence.client.HDel(presence.ctx, key, keys...)
+	}
+
+	return amount
 }
 
 // SetDeviceOnline - Set device online
