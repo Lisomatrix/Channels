@@ -161,7 +161,7 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 		}
 
 		// Then we publish to other servers
-		GetEngine().GetPublisher().PublishChannelEvent(appID, channelID, newChannelEvent)
+		//GetEngine().GetPublisher().PublishChannelEvent(appID, channelID, newChannelEvent)
 	}
 
 	if channel.Presence {
@@ -253,7 +253,7 @@ func LeaveChannel(appID string, channelID string, clientID string) (bool, error)
 		}
 
 		// Then we publish to other servers
-		GetEngine().GetPublisher().PublishChannelEvent(appID, channelID, newChannelEvent)
+		//GetEngine().GetPublisher().PublishChannelEvent(appID, channelID, newChannelEvent)
 	}
 
 	if channel.Presence {

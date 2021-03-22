@@ -36,7 +36,7 @@ func (publisher *RedisPublisher) PublishChannelPresenceChange(appID string, chan
 	}
 
 	newEvent := ExternalNewEvent{
-		Type:              ExternalNewEventType_ChannelEvent,
+		Type:              ExternalNewEventType_ChannelPresence,
 		ServerID:          core.GetEngine().GetServerID(),
 		ExternalJoinLeave: &channelPresenceChange,
 	}
@@ -71,7 +71,7 @@ func (publisher *RedisPublisher) PublishChannelAccessChange(appID string, channe
 	}
 
 	newEvent := ExternalNewEvent{
-		Type:              ExternalNewEventType_ChannelEvent,
+		Type:              ExternalNewEventType_ChannelAccess,
 		ServerID:          core.GetEngine().GetServerID(),
 		ExternalAccessEvent: &accessEvent,
 	}
@@ -101,7 +101,7 @@ func (publisher *RedisPublisher) PublishChannelOnlineChange(appID string, channe
 	}
 
 	newEvent := ExternalNewEvent{
-		Type:              ExternalNewEventType_ChannelEvent,
+		Type:              ExternalNewEventType_OnlineStatus,
 		ServerID:          core.GetEngine().GetServerID(),
 		ExternalOnlineStatus: &onlineStatusEvent,
 	}
