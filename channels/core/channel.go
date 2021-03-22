@@ -155,6 +155,7 @@ func (channel *HubChannel) Publish(channelEvent *ChannelEvent, shouldStore bool)
 				EventType: channelEvent.EventType,
 				Timestamp: channelEvent.Timestamp,
 				ClientIDs: clientIDs,
+				Payload: channelEvent.Payload,
 			}
 
 			GetEngine().GetPushHandler().EnqueueRequest(&request)

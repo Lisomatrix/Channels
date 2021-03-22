@@ -13,3 +13,5 @@ config_remote_postgres.yaml
 >>>>>>> Stashed changes
 
 channels_firebase.json
+
+.DS_Store
