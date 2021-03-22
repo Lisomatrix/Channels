@@ -6,5 +6,10 @@ config.yaml
 *.exe
 
 var/
+<<<<<<< Updated upstream
 
 config_remote_postgres.yaml
+=======
+>>>>>>> Stashed changes
+
+channels_firebase.json

@@ -5,6 +5,7 @@ package channels
 
 import (
 	"fmt"
+	"github.com/lisomatrix/channels/channels/push"
 	"log"
 	"os"
 
@@ -105,6 +106,6 @@ func InitEngineAndStart(host string, port string) {
 	// TODO: FCM implementation
 
 	dbStorage := pgxsql.NewSQLStorageDatabase()
-	core.InitEngine(dbStorage, cache.NewRedisCacheStorage(), publisher.NewRedisPublisher(), presence.NewRedisPresence())
+	core.InitEngine(dbStorage, cache.NewRedisCacheStorage(), publisher.NewRedisPublisher(), presence.NewRedisPresence(), &push.EmptyPushNotificationHandler{})
 	Start(host, port, gin.Default())
 }

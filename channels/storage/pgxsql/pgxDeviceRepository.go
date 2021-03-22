@@ -2,7 +2,6 @@ package pgxsql
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/lisomatrix/channels/channels/core"
 	"os"
@@ -31,11 +30,12 @@ func (repo *PGXDeviceRepository) GetDevice(id string) (*core.Device, error) {
 
 	err := row.Scan(&token, &clientID)
 
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-
 	if err != nil {
+
+		if err.Error() == "no rows in result set" {
+			return nil, nil
+		}
+
 		_, _ = fmt.Fprintf(os.Stderr, "GetDevice: query scan failed: %v\n", err)
 		return nil, err
 	}

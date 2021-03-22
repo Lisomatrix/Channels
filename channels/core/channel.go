@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-
 // HubChannel - Handler for topic
 type HubChannel struct {
 	Data                   *Channel
@@ -113,12 +112,10 @@ func (channel *HubChannel) Publish(channelEvent *ChannelEvent, shouldStore bool)
 
 	// * We parse the message here, so
 	// * we avoid parsing for each connection
-	//data, err := json.Marshal(channelEvent)
-
 	data, err := channelEvent.Marshal()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal channel event: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal channel event: %v\n", err)
 		return false
 	}
 
@@ -130,7 +127,7 @@ func (channel *HubChannel) Publish(channelEvent *ChannelEvent, shouldStore bool)
 	newEventData, err := newEvent.Marshal()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal new channel event: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal new channel event: %v\n", err)
 		return false
 	}
 
@@ -138,6 +135,30 @@ func (channel *HubChannel) Publish(channelEvent *ChannelEvent, shouldStore bool)
 	if channel.Data.Persistent && shouldStore {
 		GetEngine().StoreEvent(channel.Data.AppID, channelEvent)
 		GetEngine().GetCacheStorage().StoreChannelEvent(channel.Data.ID, channel.Data.AppID, channelEvent)
+
+		if channel.Data.Presence {
+
+			clientIDs := make([]string, 0)
+			channel.connectedClientsStatus.Range(func (key interface{}, value interface{}) bool {
+				clientID := key.(string)
+				status := value.(ClientStatus)
+
+				if !status.Status {
+					clientIDs = append(clientIDs, clientID)
+				}
+
+				return true
+			})
+
+			request := PushRequestItem{
+				ChannelID: channel.Data.ID,
+				EventType: channelEvent.EventType,
+				Timestamp: channelEvent.Timestamp,
+				ClientIDs: clientIDs,
+			}
+
+			GetEngine().GetPushHandler().EnqueueRequest(&request)
+		}
 	}
 
 	GetEngine().GetPublisher().PublishChannelEvent(channel.Data.AppID, channel.Data.ID, channelEvent)

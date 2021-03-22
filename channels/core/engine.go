@@ -16,6 +16,7 @@ type Engine struct {
 	insertQueue     StorageInsertQueue
 	publisher       PublishHandler
 	presence        PresenceHandler
+	pushHandler 	PushNotificationHandler
 }
 
 // InsertItem - Insert Item queued
@@ -77,6 +78,11 @@ func (engine *Engine) GetPresence() PresenceHandler {
 	return engine.presence
 }
 
+// GetPushHandler - Get Push notification handler
+func (engine *Engine) GetPushHandler() PushNotificationHandler {
+	return engine.pushHandler
+}
+
 var engine *Engine = nil
 
 // GetEngine - Get engine singleton
@@ -85,7 +91,7 @@ func GetEngine() *Engine {
 }
 
 // InitEngine - Create new engine instance
-func InitEngine(dbStorage DatabaseStorage, cacheStorage CacheStorage, publisher PublishHandler, presence PresenceHandler) {
+func InitEngine(dbStorage DatabaseStorage, cacheStorage CacheStorage, publisher PublishHandler, presence PresenceHandler, pushHandler PushNotificationHandler) {
 	engine = &Engine{
 		serverID:        xid.New().String(),
 		HubsHandler:     HubsHandler{},
@@ -94,6 +100,7 @@ func InitEngine(dbStorage DatabaseStorage, cacheStorage CacheStorage, publisher 
 		insertQueue:     StorageInsertQueue{},
 		publisher:       publisher,
 		presence:        presence,
+		pushHandler:	 pushHandler,
 	}
 
 	engine.insertQueue.insertChannel = make(chan InsertItem, 300)

@@ -68,6 +68,7 @@ type Channel struct {
 	Persistent bool   `json:"isPersistent"`
 	Private    bool   `json:"isPrivate"`
 	Presence   bool   `json:"isPresence"`
+	Push 	   bool   `json:"isPush"`
 }
 
 // ChannelRepository - Repository for handling Channel, Channel_Event and Channel_Client tables

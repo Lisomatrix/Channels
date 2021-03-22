@@ -62,7 +62,7 @@ CREATE TABLE public."Client" (
 
 CREATE TABLE public."Device" (
     "ID" character varying(50) NOT NULL,
-    "Token" character varying(100) NOT NULL,
+    "Token" character varying(350) NOT NULL,
     "ClientID" character varying(100) NOT NULL
 );
 
