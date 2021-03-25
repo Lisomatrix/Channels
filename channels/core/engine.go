@@ -120,7 +120,7 @@ func InitEngine(dbStorage DatabaseStorage, cacheStorage CacheStorage, publisher 
 }
 
 const (
-	CacheLimit   = 50 // Amount of insert before batching
+	CacheLimit   = 70 // Amount of insert before batching
 	CacheTimeout = 5 * time.Second
 )
 
