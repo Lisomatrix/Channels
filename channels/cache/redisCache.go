@@ -360,6 +360,7 @@ func (cache *RedisCacheStorage) StoreChannel(appID string, channelID string, cha
 			Persistent: channel.Persistent,
 			Private:    channel.Private,
 			Presence:   channel.Presence,
+			Push: 		channel.Push,
 		}
 
 		data, err := proto.Marshal(&cachedChannel)

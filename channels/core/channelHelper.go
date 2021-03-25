@@ -27,7 +27,7 @@ func CreateChannel(appID string, channel *Channel) (bool, error) {
 	)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Create Channel failed %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Create Channel failed %v\n", err)
 		return false, nil
 	}
 

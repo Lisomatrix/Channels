@@ -24,6 +24,7 @@ message CachedChannel {
     bool persistent = 5;
     bool private    = 6;
     bool presence   = 7;
+    bool push       = 8;
 }
 
 message CachedDevice {
