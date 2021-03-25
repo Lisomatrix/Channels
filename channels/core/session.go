@@ -82,8 +82,6 @@ func (session *Session) Init(connection Connection, deviceID string, identity *a
 	connection.SetOnHeartBeat(session.onHeartBeat)
 
 	// Update user device online status
-	//GetEngine().GetPresence().AddDevice(clientID, deviceID)
-	//GetEngine().GetPresence().SetDeviceOnline(session.clientID, session.deviceID)
 	GetEngine().GetPresence().UpdateClientTimestamp(session.clientID)
 }
 
@@ -162,17 +160,7 @@ func (session *Session) onHeartBeat()  {
 	}
 
 	// Update device timestamp
-	//GetEngine().GetPresence().UpdateDeviceTimestamp(session.clientID, session.deviceID)
 	GetEngine().GetPresence().UpdateClientTimestamp(session.clientID)
-
-	// Update timestamp on all channels with session
-	/*
-	for _, c := range session.SubscribedChannels {
-
-		if c.Data.Presence {
-			GetEngine().GetPresence().AddOnlineChannelDevice(c.Data.AppID, c.Data.ID, session.clientID, session.deviceID)
-		}
-	}*/
 }
 
 func (session *Session) onClose() {
@@ -288,13 +276,13 @@ func (session *Session) CanSubscribe(channelID string) bool {
 
 	for _, c := range session.AllowedChannels {
 		if c == channelID {
-			chann := session.hub.Subscribe(channelID, session)
+			channel := session.hub.Subscribe(channelID, session)
 
-			if chann == nil {
+			if channel == nil {
 				return false
 			}
 
-			session.SubscribedChannels = append(session.SubscribedChannels, chann)
+			session.SubscribedChannels = append(session.SubscribedChannels, channel)
 
 			return true
 		}
