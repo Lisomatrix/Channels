@@ -11,22 +11,22 @@ import (
 
 // Channel SQL
 var selectChannelClients = `SELECT "clientID" FROM "Channel_Client" WHERE "channelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $2 LIMIT 1);`
-var createChannelSQL = `INSERT INTO "Channel"("ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence") VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9);`
+var createChannelSQL = `INSERT INTO "Channel"("ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence", "Push") VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
 var deleteChannelSQL = `DELETE FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $2;`
 var deleteAppChannelsSQL = `DELETE FROM "Channel" WHERE "AppID" = $1;`
 var joinChannelSQL = `INSERT INTO public."Channel_Client"("clientID", "channelID") VALUES ($2, (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $3 LIMIT 1));`
 var leaveChannelSQL = `DELETE FROM "Channel_Client" WHERE "channelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $3 LIMIT 1) AND "clientID" = $2;`
 var setCloseStatusSQL = `UPDATE "Channel" SET "IsClosed" = $1 WHERE "ChannelID" = $2 AND "AppID" = $3;`
 var selectClientAllowedChannelsSQL = `SELECT "ChannelID" FROM "Channel" WHERE "Private" = false AND "ID" IN (SELECT "channelID" FROM "Channel_Client" WHERE "clientID" = $1);`
-var selectClientOpenOrPrivateChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence" FROM "Channel" WHERE "Private" = $1 AND "ChannelID" IN (SELECT "channelID" FROM "Channel_Client" WHERE "clientID" = $2);`
-var selectOpenOrPrivateAppChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence" FROM "Channel" WHERE "Private" = $1 AND "AppID" = $2;`
-var selectAppChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence" FROM "Channel" WHERE "AppID" = $1;`
+var selectClientOpenOrPrivateChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence", "Push" FROM "Channel" WHERE "Private" = $1 AND "ChannelID" IN (SELECT "channelID" FROM "Channel_Client" WHERE "clientID" = $2);`
+var selectOpenOrPrivateAppChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence", "Push" FROM "Channel" WHERE "Private" = $1 AND "AppID" = $2;`
+var selectAppChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence", "Push" FROM "Channel" WHERE "AppID" = $1;`
 var selectAppChannelAmount = `SELECT COUNT("ChannelID") FROM "Channel" WHERE "AppID" = $1;`
 var selectAppChannelExists = `SELECT COUNT("ChannelID") FROM "Channel" WHERE "AppID" = $1 AND "ChannelID" = $2 LIMIT 1;`
-var selectAllOpenOrPrivateChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence" FROM "Channel" WHERE "Private" = $1;`
-var selectAllChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence" FROM "Channel";`
+var selectAllOpenOrPrivateChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence", "Push" FROM "Channel" WHERE "Private" = $1;`
+var selectAllChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence", "Push" FROM "Channel";`
 var selectAllChannelsAmount = `SELECT COUNT("ChannelID") FROM "Channel"`
-var selectAppChannel = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence" FROM "Channel" WHERE "AppID" = $1 AND "ChannelID" = $2;`
+var selectAppChannel = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence", "Push" FROM "Channel" WHERE "AppID" = $1 AND "ChannelID" = $2;`
 var addChannelEventSQL = `INSERT INTO "Channel_Event"("SenderID", "EventType", "Payload", "ChannelID", "TimeStamp") VALUES ( $1 , $2 , $3 , (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $4 AND "AppID" = $6 LIMIT 1) , $5 );`
 
 var selectEventsSinceTimeStampSQL = `SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM "Channel_Event" WHERE "ChannelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $2) AND "TimeStamp" >= $3;`
@@ -84,7 +84,7 @@ func (repo *ChannelRepository) GetChannelClients(appID string, channelID string)
 }
 
 // CreateChannel - Insert new channel row
-func (repo *ChannelRepository) CreateChannel(id string, appID string, name string, createdAt int64, isClosed bool, extra string, persistent bool, private bool, presence bool) error {
+func (repo *ChannelRepository) CreateChannel(id string, appID string, name string, createdAt int64, isClosed bool, extra string, persistent bool, private bool, presence bool, push bool) error {
 	stmt, err := repo.dbHolder.db.Prepare(createChannelSQL)
 
 	if err != nil {
@@ -92,7 +92,7 @@ func (repo *ChannelRepository) CreateChannel(id string, appID string, name strin
 		return err
 	}
 
-	_, err = stmt.Exec(id, appID, name, createdAt, isClosed, extra, persistent, private, presence)
+	_, err = stmt.Exec(id, appID, name, createdAt, isClosed, extra, persistent, private, presence, push)
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "CreateChannel: statement execution failed: %v\n", err)
@@ -805,16 +805,6 @@ func (repo *ChannelRepository) rowToChannelEvent(channelID string, rows *sql.Row
 		Timestamp: timestamp,
 	}
 
-	/*
-		channEvent := &core.ChannelEvent{
-			ID:        id,
-			SenderID:  senderID,
-			EventType: eventType,
-			Payload:   payload,
-			ChannelID: channelID,
-			Timestamp: timestamp,
-		}*/
-
 	return channEvent, err
 }
 
@@ -829,8 +819,9 @@ func (repo *ChannelRepository) rowToChannel(rows *sql.Rows) (*core.Channel, erro
 	var persistent bool
 	var private bool
 	var presence bool
+	var push bool
 
-	err := rows.Scan(&id, &appID, &name, &createdAt, &isClosed, &extra, &persistent, &private, &presence)
+	err := rows.Scan(&id, &appID, &name, &createdAt, &isClosed, &extra, &persistent, &private, &presence, &push)
 
 	chann := &core.Channel{
 		ID:         id,
@@ -842,6 +833,7 @@ func (repo *ChannelRepository) rowToChannel(rows *sql.Rows) (*core.Channel, erro
 		Persistent: persistent,
 		Private:    private,
 		Presence:   presence,
+		Push:	 	push,
 	}
 
 	return chann, err
@@ -857,8 +849,9 @@ func (repo *ChannelRepository) singleRowToChannel(rows *sql.Row) (*core.Channel,
 	var persistent bool
 	var private bool
 	var presence bool
+	var push bool
 
-	err := rows.Scan(&id, &appID, &name, &createdAt, &isClosed, &extra, &persistent, &private, &presence)
+	err := rows.Scan(&id, &appID, &name, &createdAt, &isClosed, &extra, &persistent, &private, &presence, &push)
 
 	chann := &core.Channel{
 		ID:         id,
@@ -870,6 +863,7 @@ func (repo *ChannelRepository) singleRowToChannel(rows *sql.Row) (*core.Channel,
 		Persistent: persistent,
 		Private:    private,
 		Presence:   presence,
+		Push: push,
 	}
 
 	return chann, err

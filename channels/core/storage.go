@@ -55,6 +55,7 @@ type DeviceRepository interface {
 	DeleteClientDevices(clientID string) error
 	GetClientDevices(clientID string) ([]*Device, error)
 	GetClientDeviceTokens(clientID string) ([]string, error)
+	GetClientsDeviceTokens(clientIDs []string, amount int) ([]string, error)
 }
 
 // Channel - Database representation of a channel
@@ -73,7 +74,7 @@ type Channel struct {
 
 // ChannelRepository - Repository for handling Channel, Channel_Event and Channel_Client tables
 type ChannelRepository interface {
-	CreateChannel(id string, appID string, name string, createdAt int64, isClosed bool, extra string, persistent bool, private bool, presence bool) error
+	CreateChannel(id string, appID string, name string, createdAt int64, isClosed bool, extra string, persistent bool, private bool, presence bool, push bool) error
 
 	GetChannelClients(appID string, channelID string) ([]string, error)
 	DeleteChannel(appID string, id string) error

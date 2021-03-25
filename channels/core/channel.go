@@ -135,31 +135,32 @@ func (channel *HubChannel) Publish(channelEvent *ChannelEvent, shouldStore bool)
 	if channel.Data.Persistent && shouldStore {
 		GetEngine().StoreEvent(channel.Data.AppID, channelEvent)
 		GetEngine().GetCacheStorage().StoreChannelEvent(channel.Data.ID, channel.Data.AppID, channelEvent)
+	}
 
-		if channel.Data.Presence {
+	// If has presence and push activated then send push notification to offline users
+	if channel.Data.Presence && channel.Data.Push {
 
-			clientIDs := make([]string, 0)
-			channel.connectedClientsStatus.Range(func (key interface{}, value interface{}) bool {
-				clientID := key.(string)
-				status := value.(ClientStatus)
+		clientIDs := make([]string, 0)
+		channel.connectedClientsStatus.Range(func (key interface{}, value interface{}) bool {
+			clientID := key.(string)
+			status := value.(ClientStatus)
 
-				if !status.Status {
-					clientIDs = append(clientIDs, clientID)
-				}
-
-				return true
-			})
-
-			request := PushRequestItem{
-				ChannelID: channel.Data.ID,
-				EventType: channelEvent.EventType,
-				Timestamp: channelEvent.Timestamp,
-				ClientIDs: clientIDs,
-				Payload: channelEvent.Payload,
+			if !status.Status {
+				clientIDs = append(clientIDs, clientID)
 			}
 
-			GetEngine().GetPushHandler().EnqueueRequest(&request)
+			return true
+		})
+
+		request := PushRequestItem{
+			ChannelID: channel.Data.ID,
+			EventType: channelEvent.EventType,
+			Timestamp: channelEvent.Timestamp,
+			ClientIDs: clientIDs,
+			Payload: channelEvent.Payload,
 		}
+
+		GetEngine().GetPushHandler().EnqueueRequest(&request)
 	}
 
 	GetEngine().GetPublisher().PublishChannelEvent(channel.Data.AppID, channel.Data.ID, channelEvent)
@@ -195,7 +196,7 @@ func (channel *HubChannel) ExternalPublishStatusChange(statusUpdate *OnlineStatu
 	//statusUpdateData, err := json.Marshal(statusUpdate)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal status update: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal status update: %v\n", err)
 	}
 
 	newEvent := NewEvent{
@@ -207,7 +208,7 @@ func (channel *HubChannel) ExternalPublishStatusChange(statusUpdate *OnlineStatu
 	newEventData, err := newEvent.Marshal()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal new event on status update: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal new event on status update: %v\n", err)
 	}
 
 	channel.connectedUsers.Range(func(key interface{}, value interface{}) bool {
@@ -340,16 +341,29 @@ func (channel *HubChannel) NewClient(session *Session) {
 
 func (channel *HubChannel) shouldNotifyOnlinePresenceChange(session *Session) {
 
-	timeStamp := time.Now().Unix()
+	timeStamp := time.Now()
 
 	status := ClientStatus{
 		Status:    true,
-		Timestamp: timeStamp,
+		Timestamp: timeStamp.Unix(),
 	}
 
 	// Update channel status
 	channel.connectedClientsStatus.Store(session.clientID, status)
 
+	lastTimestamp := time.Unix(GetEngine().GetPresence().GetClientTimestamp(session.clientID), 0)
+
+	if lastTimestamp.Before(timeStamp) {
+		statusUpdate := OnlineStatusUpdate{
+			ChannelID: channel.Data.ID,
+			ClientID:  session.clientID,
+			Status:    true,
+			Timestamp: timeStamp.Unix(),
+		}
+
+		channel.PublishStatusChange(&statusUpdate)
+	}
+/*
 	GetEngine().GetPresence().AddOnlineChannelDevice(channel.Data.AppID, channel.Data.ID, session.clientID, session.deviceID)
 
 	// Get how many are left
@@ -364,7 +378,7 @@ func (channel *HubChannel) shouldNotifyOnlinePresenceChange(session *Session) {
 		}
 
 		channel.PublishStatusChange(&statusUpdate)
-	}
+	}*/
 }
 
 // shouldNotifyOfflinePresenceChange - Check if an offline status update should be done
@@ -375,10 +389,34 @@ func (channel *HubChannel) shouldNotifyOfflinePresenceChange(session *Session) {
 	go func() {
 
 		timer := time.NewTimer(time.Second * 15)
+		now := time.Now()
 
 		// wait for timer
 		<-timer.C
 
+
+		lastTimeStamp := time.Unix(GetEngine().GetPresence().GetClientTimestamp(session.clientID), 0)
+
+		if lastTimeStamp.Before(now) || lastTimeStamp.Equal(now) {
+			statusUpdate := OnlineStatusUpdate{
+				ChannelID: channel.Data.ID,
+				ClientID:  session.clientID,
+				Status:    false, // If not remove is online
+				Timestamp: time.Now().Unix(),
+			}
+
+			status := ClientStatus{
+				Status:    statusUpdate.Status,
+				Timestamp: statusUpdate.Timestamp,
+			}
+
+			// Update channel status
+			channel.connectedClientsStatus.Store(session.clientID, status)
+
+			channel.PublishStatusChange(&statusUpdate)
+			timer.Stop()
+		}
+		/*
 		// Delay the deletion of the device in the channel, otherwise on shouldNotifyOnline detects 0 devices and sets as online
 		// Remove this devices from channel online devices
 		GetEngine().GetPresence().RemoveOnlineChannelDevice(channel.Data.AppID, channel.Data.ID, session.clientID, session.deviceID)
@@ -420,7 +458,7 @@ func (channel *HubChannel) shouldNotifyOfflinePresenceChange(session *Session) {
 		channel.connectedClientsStatus.Store(session.clientID, status)
 
 		channel.PublishStatusChange(&statusUpdate)
-		timer.Stop()
+		timer.Stop()*/
 	}()
 }
 

@@ -82,8 +82,8 @@ func (session *Session) Init(connection Connection, deviceID string, identity *a
 	connection.SetOnHeartBeat(session.onHeartBeat)
 
 	// Update user device online status
-	GetEngine().GetPresence().AddDevice(clientID, deviceID)
-	GetEngine().GetPresence().SetDeviceOnline(session.clientID, session.deviceID)
+	//GetEngine().GetPresence().AddDevice(clientID, deviceID)
+	//GetEngine().GetPresence().SetDeviceOnline(session.clientID, session.deviceID)
 	GetEngine().GetPresence().UpdateClientTimestamp(session.clientID)
 }
 
@@ -162,15 +162,17 @@ func (session *Session) onHeartBeat()  {
 	}
 
 	// Update device timestamp
-	GetEngine().GetPresence().UpdateDeviceTimestamp(session.clientID, session.deviceID)
+	//GetEngine().GetPresence().UpdateDeviceTimestamp(session.clientID, session.deviceID)
+	GetEngine().GetPresence().UpdateClientTimestamp(session.clientID)
 
 	// Update timestamp on all channels with session
+	/*
 	for _, c := range session.SubscribedChannels {
 
 		if c.Data.Presence {
 			GetEngine().GetPresence().AddOnlineChannelDevice(c.Data.AppID, c.Data.ID, session.clientID, session.deviceID)
 		}
-	}
+	}*/
 }
 
 func (session *Session) onClose() {
@@ -201,13 +203,12 @@ func (session *Session) onNewMessage(data []byte) {
 
 		didSubscribe := session.CanSubscribe(channelSub.ChannelID)
 
-		session.notifyAck(uint32(channelSub.ID), didSubscribe)
+		session.notifyAck(channelSub.ID, didSubscribe)
 
 	} else if newEvent.Type == NewEvent_PUBLISH {
 
 		var channelPubRequest PublishRequest
 
-		//err = json.Unmarshal([]byte(newEvent.Payload), &channelPubRequest)
 		err := channelPubRequest.Unmarshal(newEvent.Payload)
 
 		if err != nil {
@@ -228,18 +229,17 @@ func (session *Session) onNewMessage(data []byte) {
 
 }
 
-// notifyPublish - Notify publish success
+// notifyAck - Notify publish success
 func (session *Session) notifyAck(requestID uint32, status bool) {
 	ack := PublishAck{
 		ReplyTo: requestID,
 		Status:  status,
 	}
 
-	// data, err := json.Marshal(ack)
 	data, err := ack.Marshal()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Session Notify: failed to marhal ack: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Session Notify: failed to marhal ack: %v\n", err)
 		return
 	}
 
@@ -248,15 +248,13 @@ func (session *Session) notifyAck(requestID uint32, status bool) {
 		Payload: data,
 	}
 
-	//data, err = json.Marshal(newEvent)
 	data, err = newEvent.Marshal()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Session Notify: failed to marhal event: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Session Notify: failed to marhal event: %v\n", err)
 		return
 	}
 
-	//session.connection.Send(data)
 	session.connection.Send(data)
 }
 
@@ -313,7 +311,7 @@ func (session *Session) Close() {
 		session.connection.Close()
 	}
 
-	GetEngine().GetPresence().SetDeviceOffline(session.clientID, session.deviceID)
+	//GetEngine().GetPresence().SetDeviceOffline(session.clientID, session.deviceID)
 
 	session.hub.RemoveClient(session)
 }

@@ -3,6 +3,7 @@ package pgxsql
 import (
 	"context"
 	"fmt"
+	"github.com/lib/pq"
 	"github.com/lisomatrix/channels/channels/core"
 	"os"
 )
@@ -12,6 +13,7 @@ var createDeviceSQL = `INSERT INTO "Device"("ID", "Token", "ClientID") VALUES ( 
 var selectDeviceSQL = `SELECT "Token", "ClientID" FROM "Device" WHERE "ID" = $1;`
 var selectClientDevicesSQL = `SELECT "ID", "Token" FROM "Device" WHERE "ClientID" = $1;`
 var selectClientDeviceTokensSQL = `SELECT "Token" FROM "Device" WHERE "ClientID" = $1;`
+var selectClientsDeviceTokensSQL = `SELECT "Token" FROM "Device" WHERE "ClientID" = ANY($1) LIMIT $2 ;`
 var deleteClientDevicesSQL = `DELETE FROM "Device" WHERE "ClientID" = $1;`
 var deleteDeviceSQL = `DELETE FROM "Device" WHERE "ID" = $1;`
 
@@ -45,6 +47,34 @@ func (repo *PGXDeviceRepository) GetDevice(id string) (*core.Device, error) {
 		Token:    token,
 		ClientID: clientID,
 	}, nil
+}
+
+// GetClientsDeviceTokens - Get all clients device tokens up to given amount
+func (repo *PGXDeviceRepository) GetClientsDeviceTokens(clientIDs []string, amount int) ([]string, error) {
+
+	rows, err := repo.dbHolder.db.Query(repo.ctx, selectClientsDeviceTokensSQL, pq.Array(&clientIDs), amount)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: query failed: %v\n", err)
+		return nil, err
+	}
+
+	devices := make([]string, 0)
+
+	for rows.Next() {
+		var token string
+
+		err = rows.Scan(&token)
+
+		devices = append(devices, token)
+
+		if err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: row scan failed: %v\n", err)
+			return nil, err
+		}
+	}
+
+	return devices, nil
 }
 
 // GetClientDeviceTokens - Get all client device tokens

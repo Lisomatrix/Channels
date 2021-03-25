@@ -22,7 +22,7 @@ type RedisCacheStorage struct {
 
 // GetChannelEvents - Get given cached events from the channel queue
 func (cache *RedisCacheStorage) GetChannelEvents(channelID string, appID string, amount int64) []*core.ChannelEvent {
-	cmd := cache.db.LRange(cache.ctx, "app:" + appID + "channel:" + channelID + ":events", 0, amount)
+	cmd := cache.db.LRange(cache.ctx, "app:" + appID + ":channel:" + channelID + ":events", 0, amount)
 
 	if cmd.Err() != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed get cached events %v\n", cmd.Err())
@@ -62,7 +62,8 @@ func (cache *RedisCacheStorage) GetChannelEvents(channelID string, appID string,
 
 // GetChannelEventsSize - Get how much events are stored in cache
 func (cache *RedisCacheStorage) GetChannelEventsSize(channelID string, appID string) uint64 {
-	cmd := cache.db.LLen(cache.ctx, "app:" + appID + "channel:" + channelID + ":events")
+	key := "app:" + appID + ":channel:" + channelID + ":events"
+	cmd := cache.db.LLen(cache.ctx, key)
 
 	if cmd.Err() != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed get cached event queue size %v\n", cmd.Err())
@@ -81,7 +82,7 @@ func (cache *RedisCacheStorage) GetChannelEventsSize(channelID string, appID str
 
 // GetOldestChannelEvent - Get oldest event that is stored in cache
 func (cache *RedisCacheStorage) GetOldestChannelEvent(channelID string, appID string) *core.ChannelEvent {
-	cmd := cache.db.LRange(cache.ctx, "app:" + appID + "channel:" + channelID + ":events", -1, -1)
+	cmd := cache.db.LRange(cache.ctx, "app:" + appID + ":channel:" + channelID + ":events", -1, -1)
 
 	if cmd.Err() != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed get oldest channel event %v\n", cmd.Err())
@@ -134,7 +135,7 @@ func (cache *RedisCacheStorage) StoreChannelEvent(channelID string, appID string
 		return
 	}
 
-	key := "app:" + appID + "channel:" + channelID + ":events"
+	key := "app:" + appID + ":channel:" + channelID + ":events"
 
 	// Push new event and update expire period
 	pipeliner := cache.db.Pipeline()

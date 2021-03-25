@@ -15,7 +15,8 @@ CREATE TABLE public."Channel" (
     "Extra" text,
     "Persistent" boolean,
     "Private" boolean,
-    "Presence" boolean
+    "Presence" boolean,
+    "Publish" boolean
 );
 
 CREATE TABLE public."Channel_Client" (

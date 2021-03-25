@@ -23,6 +23,7 @@ func CreateChannel(appID string, channel *Channel) (bool, error) {
 		channel.Persistent,
 		channel.Private,
 		channel.Presence,
+		channel.Push,
 	)
 
 	if err != nil {

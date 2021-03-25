@@ -13,7 +13,6 @@ import (
 	"github.com/lisomatrix/channels/channels/cache"
 	"github.com/lisomatrix/channels/channels/connection"
 	"github.com/lisomatrix/channels/channels/core"
-	"github.com/lisomatrix/channels/channels/handlers"
 	"github.com/lisomatrix/channels/channels/presence"
 	"github.com/lisomatrix/channels/channels/publisher"
 	"github.com/lisomatrix/channels/channels/storage/pgxsql"
@@ -88,8 +87,8 @@ func Start(host string, port string, router *gin.Engine) {
 	router.GET("/client/:clientID", core.GetClientHandler)
 
 	// Presence routes
-	router.GET("/presence/:clientID", handlers.GetClientDevicesPresences)
-	router.GET("/online/:clientID", handlers.GetClientOnlineDevices)
+	//router.GET("/presence/:clientID", handlers.GetClientDevicesPresences)
+	//router.GET("/online/:clientID", handlers.GetClientOnlineDevices)
 
 	log.Println("Running on host " + host + " port: " + port)
 	log.Fatal(router.Run(host + ":" + port))

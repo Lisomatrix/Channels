@@ -21,6 +21,7 @@ require (
 	github.com/jackc/pgmock v0.0.0-20201204152224-4fe30f7445fd // indirect
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/jackc/pgx/v4 v4.10.1
+	github.com/jmoiron/sqlx v1.3.1
 	github.com/json-iterator/go v1.1.10
 	github.com/kr/text v0.2.0 // indirect
 	github.com/ledisdb/ledisdb v0.0.0-20200510135210-d35789ec47e6

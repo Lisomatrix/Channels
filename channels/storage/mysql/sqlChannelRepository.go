@@ -11,22 +11,22 @@ import (
 
 // Channel SQL
 var selectChannelClients = `SELECT clientID FROM Channel_Client WHERE channelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ? LIMIT 1);`
-var createChannelSQL = `INSERT INTO Channel(ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?);`
+var createChannelSQL = `INSERT INTO Channel(ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence, Push) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
 var deleteChannelSQL = `DELETE FROM Channel WHERE ChannelID = ? AND AppID = ?;`
 var deleteAppChannelsSQL = `DELETE FROM Channel WHERE AppID = ?;`
 var joinChannelSQL = `INSERT INTO Channel_Client(clientID, channelID) VALUES (?, (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ? LIMIT 1));`
 var leaveChannelSQL = `DELETE FROM Channel_Client WHERE channelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ? LIMIT 1) AND clientID = ?;`
 var setCloseStatusSQL = `UPDATE Channel SET IsClosed = ? WHERE ChannelID = ? AND AppID = ?;`
 var selectClientAllowedChannelsSQL = `SELECT ChannelID FROM Channel WHERE Private = false AND ID IN (SELECT channelID FROM Channel_Client WHERE clientID = ?);`
-var selectClientOpenOrPrivateChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence FROM Channel WHERE Private = ? AND ChannelID IN (SELECT channelID FROM Channel_Client WHERE clientID = ?);`
-var selectOpenOrPrivateAppChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence FROM Channel WHERE Private = ? AND AppID = ?;`
-var selectAppChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence FROM Channel WHERE AppID = ?;`
+var selectClientOpenOrPrivateChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence, Push FROM Channel WHERE Private = ? AND ChannelID IN (SELECT channelID FROM Channel_Client WHERE clientID = ?);`
+var selectOpenOrPrivateAppChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence, Push FROM Channel WHERE Private = ? AND AppID = ?;`
+var selectAppChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence, Push FROM Channel WHERE AppID = ?;`
 var selectAppChannelAmount = `SELECT COUNT(ChannelID) FROM Channel WHERE AppID = ?;`
 var selectAppChannelExists = `SELECT COUNT(ChannelID) FROM Channel WHERE AppID = ? AND ChannelID = ? LIMIT 1;`
-var selectAllOpenOrPrivateChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence FROM Channel WHERE Private = ?;`
-var selectAllChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence FROM Channel;`
+var selectAllOpenOrPrivateChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence, Push FROM Channel WHERE Private = ?;`
+var selectAllChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence, Push FROM Channel;`
 var selectAllChannelsAmount = `SELECT COUNT(ChannelID) FROM Channel`
-var selectAppChannel = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence FROM Channel WHERE AppID = ? AND ChannelID = ?;`
+var selectAppChannel = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence, Push FROM Channel WHERE AppID = ? AND ChannelID = ?;`
 var addChannelEventSQL = `INSERT INTO Channel_Event(SenderID, EventType, Payload, ChannelID, TimeStamp) VALUES ( ? , ? , ? , (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ? LIMIT 1) , ? );`
 
 var selectEventsSinceTimeStampSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) AND TimeStamp >= ?;`
@@ -84,7 +84,7 @@ func (repo *ChannelRepository) GetChannelClients(appID string, channelID string)
 }
 
 // CreateChannel - Insert new channel row
-func (repo *ChannelRepository) CreateChannel(id string, appID string, name string, createdAt int64, isClosed bool, extra string, persistent bool, private bool, presence bool) error {
+func (repo *ChannelRepository) CreateChannel(id string, appID string, name string, createdAt int64, isClosed bool, extra string, persistent bool, private bool, presence bool, push bool) error {
 	stmt, err := repo.dbHolder.db.Prepare(createChannelSQL)
 
 	if err != nil {
@@ -92,7 +92,7 @@ func (repo *ChannelRepository) CreateChannel(id string, appID string, name strin
 		return err
 	}
 
-	_, err = stmt.Exec(id, appID, name, createdAt, isClosed, extra, persistent, private, presence)
+	_, err = stmt.Exec(id, appID, name, createdAt, isClosed, extra, persistent, private, presence, push)
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "CreateChannel: statement execution failed: %v\n", err)
@@ -829,8 +829,9 @@ func (repo *ChannelRepository) rowToChannel(rows *sql.Rows) (*core.Channel, erro
 	var persistent bool
 	var private bool
 	var presence bool
+	var push bool
 
-	err := rows.Scan(&id, &appID, &name, &createdAt, &isClosed, &extra, &persistent, &private, &presence)
+	err := rows.Scan(&id, &appID, &name, &createdAt, &isClosed, &extra, &persistent, &private, &presence, &push)
 
 	chann := &core.Channel{
 		ID:         id,
@@ -842,6 +843,7 @@ func (repo *ChannelRepository) rowToChannel(rows *sql.Rows) (*core.Channel, erro
 		Persistent: persistent,
 		Private:    private,
 		Presence:   presence,
+		Push: push,
 	}
 
 	return chann, err
@@ -857,8 +859,9 @@ func (repo *ChannelRepository) singleRowToChannel(rows *sql.Row) (*core.Channel,
 	var persistent bool
 	var private bool
 	var presence bool
+	var push bool
 
-	err := rows.Scan(&id, &appID, &name, &createdAt, &isClosed, &extra, &persistent, &private, &presence)
+	err := rows.Scan(&id, &appID, &name, &createdAt, &isClosed, &extra, &persistent, &private, &presence, &push)
 
 	chann := &core.Channel{
 		ID:         id,
@@ -870,6 +873,7 @@ func (repo *ChannelRepository) singleRowToChannel(rows *sql.Row) (*core.Channel,
 		Persistent: persistent,
 		Private:    private,
 		Presence:   presence,
+		Push: 		push,
 	}
 
 	return chann, err

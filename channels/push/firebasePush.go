@@ -41,7 +41,7 @@ func (handler *FirePushNotificationHandler) sendMessages() {
 	}
 }
 
-func NewPushNotificationHandler(filePath string) *FirePushNotificationHandler {
+func NewFirePushNotificationHandler(filePath string) *FirePushNotificationHandler {
 	handler := new(FirePushNotificationHandler)
 
 	handler.firebaseApp = InitializeAppDefault(filePath)
@@ -64,27 +64,15 @@ func NewPushNotificationHandler(filePath string) *FirePushNotificationHandler {
 
 func sendMulticast(pushRequestItem *core.PushRequestItem, client *messaging.Client) {
 
-	// Create a list containing up to 100 registration tokens.
-	// This registration tokens come from the client FCM SDKs.
-	tokens := make([]string, 0)
+	// Firebase only allows 500 tokens
+	tokens, err := core.GetEngine().GetDeviceRepository().GetClientsDeviceTokens(pushRequestItem.ClientIDs, 500)
 
-	for _, clientID := range pushRequestItem.ClientIDs {
-		deviceTokens, err := core.GetEngine().GetDeviceRepository().GetClientDeviceTokens(clientID)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Failed to get client device tokens %v\n", err)
+	}
 
-		if err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "Failed to get client devices %v\n", err)
-			continue
-		}
-
-		if len(tokens) + len(deviceTokens) > 500 {
-			break
-		}
-
-		for _, token := range deviceTokens {
-			if token != "" {
-				tokens = append(tokens, token)
-			}
-		}
+	if len(tokens) == 0 {
+		return
 	}
 
 	message := &messaging.MulticastMessage{
@@ -97,7 +85,7 @@ func sendMulticast(pushRequestItem *core.PushRequestItem, client *messaging.Clie
 		Tokens: tokens,
 	}
 
-	_, err := client.SendMulticast(context.Background(), message)
+	_, err = client.SendMulticast(context.Background(), message)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Failed to send push notifications %v\n", err)
 	}

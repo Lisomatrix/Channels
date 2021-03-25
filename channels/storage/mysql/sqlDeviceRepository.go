@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/lisomatrix/channels/channels/core"
 	"os"
 )
@@ -11,6 +12,7 @@ var createDeviceSQL = `INSERT INTO Device(ID, Token, ClientID) VALUES ( ? , ? , 
 var selectDeviceSQL = `SELECT Token, ClientID FROM Device WHERE ID = ?;`
 var selectClientDevicesSQL = `SELECT ID, Token FROM Device WHERE ClientID = ?;`
 var selectClientDeviceTokensSQL = `SELECT Token FROM Device WHERE ClientID = ?;`
+var selectClientsDeviceTokensSQL = `SELECT Token FROM Device WHERE ClientID in (?) LIMIT ? ;`
 var deleteClientDevicesSQL = `DELETE FROM Device WHERE ClientID = ?;`
 var deleteDeviceSQL = `DELETE FROM Device WHERE ID = ?;`
 
@@ -19,12 +21,48 @@ type DeviceRepository struct {
 	dbHolder *DatabaseStorage
 }
 
+// GetClientsDeviceTokens - Get all clients device tokens up to given amount
+func (repo *DeviceRepository) GetClientsDeviceTokens(clientIDs []string, amount int ) ([]string, error) {
+
+	query, args, err := sqlx.In(selectClientsDeviceTokensSQL, clientIDs, amount)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: prepare query failed: %v\n", err)
+		return nil, err
+	}
+
+	rows, err := repo.dbHolder.db.Query(query, args...)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: query failed: %v\n", err)
+		return nil, err
+	}
+
+	devices := make([]string, 0)
+
+	for rows.Next() {
+		var token string
+
+		err = rows.Scan(&token)
+
+		devices = append(devices, token)
+
+		if err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: row scan failed: %v\n", err)
+			return nil, err
+		}
+	}
+
+	return devices, nil
+}
+
+
 // GetDevice - Get device
 func (repo *DeviceRepository) GetDevice(id string) (*core.Device, error) {
 	stmt, err := repo.dbHolder.db.Prepare(selectDeviceSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetDevice: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetDevice: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
@@ -59,14 +97,14 @@ func (repo *DeviceRepository) GetClientDeviceTokens(clientID string) ([]string, 
 	stmt, err := repo.dbHolder.db.Prepare(selectClientDeviceTokensSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: query failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -82,7 +120,7 @@ func (repo *DeviceRepository) GetClientDeviceTokens(clientID string) ([]string, 
 		devices = append(devices, token)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: row scan failed: %v\n", err)
 			return nil, err
 		}
 	}

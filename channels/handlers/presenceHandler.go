@@ -1,14 +1,7 @@
 package handlers
 
 import (
-	jsoniter "github.com/json-iterator/go"
-	"fmt"
-	"github.com/lisomatrix/channels/channels/auth"
 	"github.com/lisomatrix/channels/channels/core"
-	"net/http"
-	"os"
-
-	"github.com/gin-gonic/gin"
 )
 
 type lastDeviceStatusResponse struct {
@@ -18,7 +11,7 @@ type lastDeviceStatusResponse struct {
 type onlineDevicesResponse struct {
 	OnlineDeviceIDs []string `json:"onlineDevices"`
 }
-
+/*
 // GetClientOnlineDevices - Get all client online devices
 // GET /online/:clientID
 func GetClientOnlineDevices(context *gin.Context) {
@@ -78,7 +71,8 @@ func GetClientOnlineDevices(context *gin.Context) {
 	writer.WriteHeader(http.StatusOK)
 	_, _ = writer.Write(data)
 }
-
+*/
+/*
 // GetClientDevicesPresences - Get all client devices presence
 // GET /presence/:clientID
 func GetClientDevicesPresences(context *gin.Context) {
@@ -137,4 +131,4 @@ func GetClientDevicesPresences(context *gin.Context) {
 
 	writer.WriteHeader(http.StatusOK)
 	_, _ = writer.Write(data)
-}
+}*/

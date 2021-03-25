@@ -36,6 +36,7 @@ type CreateChannelRequest struct {
 	Presence   bool     `json:"presence"`
 	Users      []string `json:"users"`
 	Extra      string   `json:"extra"`
+	Push       bool     `json:"push"`
 }
 
 type outEvent struct {
@@ -210,10 +211,11 @@ func CreateChannelHandler(context *gin.Context) {
 		Persistent: createChannelRequest.Persistent,
 		Private:    createChannelRequest.Private,
 		Presence:   createChannelRequest.Presence,
+		Push: 		createChannelRequest.Push,
 	}
 
 	if isOK, err := CreateChannel(appID, &newChannel); err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Create Channel failed %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Create Channel failed %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 	} else if isOK {
 		writer.WriteHeader(http.StatusOK)
@@ -546,13 +548,13 @@ func GetOpenChannels(context *gin.Context) {
 	data, err := json.Marshal(response)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to marshal response %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to marshal response %v\n", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	writer.WriteHeader(http.StatusOK)
-	writer.Write(data)
+	_, _ = writer.Write(data)
 }
 
 // GetPrivateChannels - Get all private channels

@@ -78,7 +78,7 @@ func TestPGXChannelStorage(t *testing.T) {
 	repo := storage.GetChannelRepository()
 
 	// Create channel
-	if err := repo.CreateChannel(channelID, appID, channelName, createdAt, false, extra, false, false, false); err != nil {
+	if err := repo.CreateChannel(channelID, appID, channelName, createdAt, false, extra, false, false, false, false); err != nil {
 		t.Errorf("Failed to create channel %s \n", err.Error())
 	}
 
