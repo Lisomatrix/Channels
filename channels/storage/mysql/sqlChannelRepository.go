@@ -17,7 +17,7 @@ var deleteAppChannelsSQL = `DELETE FROM Channel WHERE AppID = ?;`
 var joinChannelSQL = `INSERT INTO Channel_Client(clientID, channelID) VALUES (?, (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ? LIMIT 1));`
 var leaveChannelSQL = `DELETE FROM Channel_Client WHERE channelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ? LIMIT 1) AND clientID = ?;`
 var setCloseStatusSQL = `UPDATE Channel SET IsClosed = ? WHERE ChannelID = ? AND AppID = ?;`
-var selectClientAllowedChannelsSQL = `SELECT ChannelID FROM Channel WHERE Private = false AND ID IN (SELECT channelID FROM Channel_Client WHERE clientID = ?);`
+var selectClientAllowedChannelsSQL = `SELECT ChannelID FROM Channel WHERE ID IN (SELECT channelID FROM Channel_Client WHERE clientID = ?);`
 var selectClientOpenOrPrivateChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence, Push FROM Channel WHERE Private = ? AND ChannelID IN (SELECT channelID FROM Channel_Client WHERE clientID = ?);`
 var selectOpenOrPrivateAppChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence, Push FROM Channel WHERE Private = ? AND AppID = ?;`
 var selectAppChannels = `SELECT ChannelID, AppID, Name, Created_At, IsClosed, Extra, Persistent, Private, Presence, Push FROM Channel WHERE AppID = ?;`

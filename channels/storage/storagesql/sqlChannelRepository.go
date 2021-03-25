@@ -17,7 +17,7 @@ var deleteAppChannelsSQL = `DELETE FROM "Channel" WHERE "AppID" = $1;`
 var joinChannelSQL = `INSERT INTO public."Channel_Client"("clientID", "channelID") VALUES ($2, (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $3 LIMIT 1));`
 var leaveChannelSQL = `DELETE FROM "Channel_Client" WHERE "channelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $3 LIMIT 1) AND "clientID" = $2;`
 var setCloseStatusSQL = `UPDATE "Channel" SET "IsClosed" = $1 WHERE "ChannelID" = $2 AND "AppID" = $3;`
-var selectClientAllowedChannelsSQL = `SELECT "ChannelID" FROM "Channel" WHERE "Private" = false AND "ID" IN (SELECT "channelID" FROM "Channel_Client" WHERE "clientID" = $1);`
+var selectClientAllowedChannelsSQL = `SELECT "ChannelID" FROM "Channel" WHERE "ID" IN (SELECT "channelID" FROM "Channel_Client" WHERE "clientID" = $1);`
 var selectClientOpenOrPrivateChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence", "Push" FROM "Channel" WHERE "Private" = $1 AND "ChannelID" IN (SELECT "channelID" FROM "Channel_Client" WHERE "clientID" = $2);`
 var selectOpenOrPrivateAppChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence", "Push" FROM "Channel" WHERE "Private" = $1 AND "AppID" = $2;`
 var selectAppChannels = `SELECT "ChannelID", "AppID", "Name", "Created_At", "IsClosed", "Extra", "Persistent", "Private", "Presence", "Push" FROM "Channel" WHERE "AppID" = $1;`
