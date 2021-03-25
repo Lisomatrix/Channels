@@ -182,6 +182,100 @@ func GetMessagesSinceTimeStamp(context *gin.Context) {
 }
 
 // GetLastMessagesSinceTimeStamp - Fetch last messages after a timestamp
+// GET /channel/:channelID/sync/:lastTimeStamp/before/:amount
+func GetLastMessagesBeforeTimeStamp(context *gin.Context) {
+	request := context.Request
+	writer := context.Writer
+
+	// Check for required headers
+	token, appID, isOK := auth.GetAuthData(request)
+
+	if !isOK {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Validate token
+	identity, isOK := auth.VerifyToken(token)
+
+	// If not valid return
+	if !isOK || !identity.CanUseAppID(appID) {
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	channelID := context.Params.ByName("channelID")
+
+	if channelID == "" {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	amountStr := context.Params.ByName("amount")
+
+	if amountStr == "" {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	amount, err := strconv.ParseInt(amountStr, 10, 64)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed convert amount %v\n", err)
+	}
+
+	lastTimeStampStr := context.Params.ByName("lastTimeStamp")
+
+	if lastTimeStampStr == "" {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	lastTimeStamp, err := strconv.ParseInt(lastTimeStampStr, 10, 64)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed convert timestamp %v\n", err)
+	}
+
+	// Check if channel exists
+	exists, err := GetEngine().GetChannelRepository().ExistsAppChannel(appID, channelID)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed to check app channel existence %v\n", err)
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if !exists {
+		writer.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	events, err := GetEngine().GetChannelRepository().GetChannelLastEventsBefore(appID, channelID, amount, lastTimeStamp)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed fetch events %v\n", err)
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Prepare response
+	response := getChannelEventsResponse{Events: events}
+
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	data, err := json.Marshal(response)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get last messages since timestamp: failed to marshal response %v\n", err)
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	writer.WriteHeader(http.StatusOK)
+	_, _ = writer.Write(data)
+}
+
+// GetLastMessagesSinceTimeStamp - Fetch last messages after a timestamp
 // GET /channel/:channelID/sync/:lastTimeStamp/last/:amount
 func GetLastMessagesSinceTimeStamp(context *gin.Context) {
 	request := context.Request

@@ -75,6 +75,7 @@ func Start(host string, port string, router *gin.Engine) {
 	router.GET("/c/:channelID/sync/:lastTimeStamp", core.GetMessagesSinceTimeStamp)
 	router.GET("/last/:channelID/:amount", core.GetLastMessages)
 	router.GET("/last/:channelID/:amount/last/:lastTimeStamp", core.GetLastMessagesSinceTimeStamp)
+	router.GET("/last/:channelID/:amount/before/:lastTimeStamp", core.GetLastMessagesBeforeTimeStamp)
 
 	// Channel Publish
 	router.POST("/channel/:channelID/publish", core.PostEventHandler)

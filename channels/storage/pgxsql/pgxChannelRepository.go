@@ -36,7 +36,8 @@ var selectEventsBetweenTimeStampsSQL = `SELECT "SenderID", "EventType", "Payload
 // * The new one is based on primary key since its auto incremented to it's way faster
 var selectLastEventsSQL = `SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM "Channel_Event" WHERE "ChannelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $2) ORDER BY "ID" DESC LIMIT $3;`
 
-var selectLastEventsSinceTimeStampSQL = `SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM (SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM "Channel_Event" WHERE "ChannelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $2) AND "TimeStamp" >= $3) as "t" ORDER BY "TimeStamp" DESC LIMIT $4;`
+var selectLastEventsSinceTimeStampSQL = `SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM (SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM "Channel_Event" WHERE "ChannelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $2) AND "TimeStamp" >= $3) as "t" ORDER BY "TimeStamp" ASC LIMIT $4;`
+var selectLastEventsBeforeTimeStampSQL = `SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM (SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM "Channel_Event" WHERE "ChannelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $2) AND "TimeStamp" <= $3) as "t" ORDER BY "TimeStamp" DESC LIMIT $4;`
 
 // NewSQLChannelRepository - Create a new instance of SQLChannelRepository
 func NewSQLChannelRepository(db *PGXDatabaseStorage) *PGXChannelRepository {
@@ -539,6 +540,31 @@ func (repo *PGXChannelRepository) GetChannelEventsAfterAndBefore(appID string, c
 
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "GetChannelEventsAfterAndBefore: row scan failed: %v\n", err)
+			return nil, err
+		}
+
+		channelEvents = append(channelEvents, event)
+	}
+
+	return channelEvents, nil
+}
+
+// GetChannelLastEventsAfter - Get an given amount events after given timestamp
+func (repo *PGXChannelRepository) GetChannelLastEventsBefore(appID string, channelID string, amount int64, timestamp int64) ([]*core.ChannelEvent, error) {
+	rows, err := repo.dbHolder.db.Query(repo.ctx, selectLastEventsBeforeTimeStampSQL, channelID, appID, timestamp, amount)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "GetChannelLastEventsAfter: query failed: %v\n", err)
+		return nil, err
+	}
+
+	channelEvents := make([]*core.ChannelEvent, 0)
+
+	for rows.Next() {
+		event, err := repo.rowToChannelEvent(channelID, rows)
+
+		if err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "GetChannelLastEventsAfter: row scan failed: %v\n", err)
 			return nil, err
 		}
 

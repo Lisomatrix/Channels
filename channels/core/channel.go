@@ -16,6 +16,7 @@ type HubChannel struct {
 	isClosing              bool
 	connectedCounter	   atomic.Int32
 	hub 				   *Hub
+	inactivityTimer		   *time.Timer
 }
 
 // DeleteChannel - Unsubscribe all clients and stop accepting subscriptions
@@ -283,6 +284,11 @@ func (channel *HubChannel) NewClient(session *Session) {
 		return
 	}
 
+	if channel.inactivityTimer != nil {
+		channel.inactivityTimer.Stop()
+		channel.inactivityTimer = nil
+	}
+
 	// Add connected counter
 	channel.connectedCounter.Inc()
 
@@ -489,11 +495,17 @@ func (channel *HubChannel) shouldCloseChannel() {
 	// Set a timer of X seconds
 	// To prevent removing channel if a user connects in the next 15 mins
 	go func() {
-		timer := time.NewTimer(time.Minute * 15)
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println(err)
+			}
+		}()
+
+		channel.inactivityTimer = time.NewTimer(time.Minute * 15)
 
 		// wait for timer
-		<-timer.C
-		timer.Stop()
+		<-channel.inactivityTimer.C
+		channel.inactivityTimer.Stop()
 
 		if channel.connectedCounter.Load() == 0 {
 			fmt.Printf("No subscribers on channel %s for the last 15 mins, closing channel...", channel.Data.ID)

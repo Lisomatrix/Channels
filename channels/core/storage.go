@@ -110,6 +110,7 @@ type ChannelRepository interface {
 	GetChannelEventsAfterAndBefore(appID string, channelID string, timestampAfter int64, timestampBefore int64) ([]*ChannelEvent, error)
 	GetChannelLastEvents(appID string, channelID string, amount int64) ([]*ChannelEvent, error)
 	GetChannelLastEventsAfter(appID string, channelID string, amount int64, timestamp int64) ([]*ChannelEvent, error)
+	GetChannelLastEventsBefore(appID string, channelID string, amount int64, timestamp int64) ([]*ChannelEvent, error)
 }
 
 // DatabaseStorage - Persistent database storage interface
