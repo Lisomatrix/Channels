@@ -33,7 +33,7 @@ var selectEventsSinceTimeStampSQL = `SELECT SenderID, EventType, Payload, TimeSt
 var selectEventsBetweenTimeStampsSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) AND TimeStamp >= ? AND TimeStamp <= ?;`
 
 // * The new one is based on primary key since its auto incremented to it's way faster
-var selectLastEventsSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) ORDER BY ID DESC LIMIT ?;`
+var selectLastEventsSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) ORDER BY ID ASC LIMIT ?;`
 
 var selectLastEventsSinceTimeStampSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM (SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) AND TimeStamp >= ?) as t ORDER BY TimeStamp ASC LIMIT ?;`
 var selectLastEventsBeforeTimeStampSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM (SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) AND TimeStamp <= ?) as t ORDER BY TimeStamp DESC LIMIT ?;`
