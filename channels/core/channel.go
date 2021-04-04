@@ -194,7 +194,6 @@ func (channel *HubChannel) ExternalPublishStatusChange(statusUpdate *OnlineStatu
 	// * We parse the message here, so
 	// * we avoid parsing for each connection
 	statusUpdateData, err := statusUpdate.Marshal()
-	//statusUpdateData, err := json.Marshal(statusUpdate)
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal status update: %v\n", err)
@@ -205,7 +204,6 @@ func (channel *HubChannel) ExternalPublishStatusChange(statusUpdate *OnlineStatu
 		Payload: statusUpdateData,
 	}
 
-	//newEventData, err := json.Marshal(&newEvent)
 	newEventData, err := newEvent.Marshal()
 
 	if err != nil {
@@ -319,7 +317,6 @@ func (channel *HubChannel) NewClient(session *Session) {
 		})
 
 		// Prepare and marshal response
-		//data, err := json.Marshal(&initialPresenceState)
 		data, err := initialPresenceState.Marshal()
 
 		if err != nil {

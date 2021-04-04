@@ -14,7 +14,7 @@ CREATE TABLE Channel (
     Persistent boolean,
     Private boolean,
     Presence boolean,
-    Publish boolean,
+    Push boolean,
     primary key (ID)
 );
 

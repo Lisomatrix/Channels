@@ -20,7 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func corsMiddleware() gin.HandlerFunc {
+func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		// c.Header("Content-Type", "application/json")
@@ -43,7 +43,7 @@ func Start(host string, port string, router *gin.Engine) {
 	gin.SetMode(gin.ReleaseMode)
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
-	router.Use(corsMiddleware())
+	router.Use(CORSMiddleware())
 
 	// WebSocket route
 	router.GET("/", connection.RequestHandler)

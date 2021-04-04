@@ -415,6 +415,7 @@ func (cache *RedisCacheStorage) GetChannel(appID string, channelID string) *core
 		Persistent: cachedChannel.Persistent,
 		Private:    cachedChannel.Private,
 		Presence:   cachedChannel.Presence,
+		Push: 		cachedChannel.Push,
 	}
 }
 
@@ -449,7 +450,7 @@ func (cache *RedisCacheStorage) AddClientChannels(clientID string, channelIDs []
 	cmd := cache.db.SAdd(cache.ctx, "client:"+clientID+":channels", channelsBin)
 
 	if cmd.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Redis Cache: failed to add multiple client channels %v\n", cmd.Err())
+		_, _ = fmt.Fprintf(os.Stderr, "Redis Cache: failed to add multiple client channels %v\n", cmd.Err())
 	}
 
 }

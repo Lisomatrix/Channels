@@ -70,6 +70,7 @@ var dbName = ""
 var dataSourceName = fmt.Sprintf("host=%s port=%s user=%s "+
 	"password=%s dbname=%s sslmode=disable", host, port, user, password, dbName)
 
+
 func SetConnectionParams(dbUser string, dbPassword string, dbHost string, dbPort string, db string) {
 	user = dbUser
 	host = dbHost
@@ -79,13 +80,16 @@ func SetConnectionParams(dbUser string, dbPassword string, dbHost string, dbPort
 
 	dataSourceName = fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable", host, port, user, password, dbName)
+
+	dataSourceName = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, db)
 }
 
 // NewSQLStorageDatabase - Create new SQLStorageDatabase instance
 func NewSQLStorageDatabase() core.DatabaseStorage {
 
 	//db, err := sql.Open(postgresDriver, dataSourceName)
-	db, err := sql.Open("mysql", "channel:pass@tcp(127.0.0.1:55555)/channels")
+	//db, err := sql.Open("mysql", "channel:pass@tcp(127.0.0.1:55555)/channels")
+	db, err := sql.Open("mysql", dataSourceName)
 	//[root[:pass]@][protocol[(address)]]/dbname
 
 	if err != nil {

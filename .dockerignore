@@ -1,0 +1,10 @@
+sql
+proto
+.idea
+.github
+config_local.yaml
+config_mysql_local.yaml
+example_config.yaml
+empty.go
+heroku_config.yaml
+README.md

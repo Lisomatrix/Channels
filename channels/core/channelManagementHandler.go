@@ -100,7 +100,7 @@ func PostEventHandler(context *gin.Context) {
 
 	// If it doesn't exist
 	// Check it from the database
-	if channel == nil /*!exists*/ {
+	if channel == nil {
 		channel, err = GetEngine().GetChannelRepository().GetAppChannel(appID, channelID)
 
 		if err != nil {
@@ -109,7 +109,7 @@ func PostEventHandler(context *gin.Context) {
 			return
 		}
 
-		if channel == nil /*!exists*/ {
+		if channel == nil {
 			writer.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -133,6 +133,10 @@ func PostEventHandler(context *gin.Context) {
 	if channel.Persistent {
 		GetEngine().GetCacheStorage().StoreChannelEvent(channelID, appID, event)
 		GetEngine().StoreEvent(channel.AppID, event)
+	}
+
+	if channel.Push {
+		SendPushNotification(appID, event)
 	}
 
 	// If no hub exists then we don't have clients from this hub

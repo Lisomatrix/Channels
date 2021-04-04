@@ -2,9 +2,33 @@ package core
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 )
+
+func SendPushNotification(appID string, channelEvent *ChannelEvent) bool {
+	clientIDs, err := GetEngine().GetChannelRepository().GetChannelClients(appID, channelEvent.ChannelID)
+
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+
+	if clientIDs == nil {
+		return false
+	}
+
+	GetEngine().GetPushHandler().EnqueueRequest(&PushRequestItem{
+		ChannelID: channelEvent.ChannelID,
+		EventType: channelEvent.EventType,
+		Payload:   channelEvent.Payload,
+		Timestamp: channelEvent.Timestamp,
+		ClientIDs: clientIDs,
+	})
+
+	return true
+}
 
 // CreateChannel - Validates input an tries to create a channel
 func CreateChannel(appID string, channel *Channel) (bool, error) {

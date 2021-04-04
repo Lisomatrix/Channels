@@ -75,6 +75,10 @@ func sendMulticast(pushRequestItem *core.PushRequestItem, client *messaging.Clie
 		return
 	}
 
+	androConfig := messaging.AndroidConfig{
+		Priority:              "high",
+	}
+
 	message := &messaging.MulticastMessage{
 		Data: map[string]string{
 			"channelID": pushRequestItem.ChannelID,
@@ -83,6 +87,7 @@ func sendMulticast(pushRequestItem *core.PushRequestItem, client *messaging.Clie
 			"payload": pushRequestItem.Payload,
 		},
 		Tokens: tokens,
+		Android: &androConfig,
 	}
 
 	_, err = client.SendMulticast(context.Background(), message)

@@ -384,6 +384,7 @@ func (cache *LedisCacheStorage) GetChannel(appID string, channelID string) *core
 		Persistent: cachedChannel.Persistent,
 		Private:    cachedChannel.Private,
 		Presence:   cachedChannel.Presence,
+		Push: 		cachedChannel.Push,
 	}
 }
 

@@ -2,7 +2,9 @@
 // and check if the token can use the resources he wants
 package auth
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // All available roles
 const (
@@ -21,6 +23,23 @@ type Identity struct {
 	Role     string
 	AppID    string
 	ClientID string
+}
+
+func GetTokenAndVerify(request *http.Request, role string) (*Identity, bool) {
+	tokenString := request.Header.Get("Authorization")
+
+	// Token must be present
+	if tokenString == "" {
+		return nil, false
+	}
+
+	if identity, isOK := VerifyToken(tokenString); !isOK {
+		return nil, false
+	} else if identity.Role != role {
+		return &identity, false
+	} else {
+		return &identity, false
+	}
 }
 
 // GetAuthData - Get AppID and Authorization

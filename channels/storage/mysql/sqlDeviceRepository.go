@@ -34,6 +34,11 @@ func (repo *DeviceRepository) GetClientsDeviceTokens(clientIDs []string, amount 
 	rows, err := repo.dbHolder.db.Query(query, args...)
 
 	if err != nil {
+
+		if err.Error() == "sql: no rows in result set" {
+			return nil, nil
+		}
+
 		_, _ = fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: query failed: %v\n", err)
 		return nil, err
 	}
@@ -77,7 +82,7 @@ func (repo *DeviceRepository) GetDevice(id string) (*core.Device, error) {
 
 	if err != nil {
 
-		if err.Error() == "no rows in result set" {
+		if err.Error() == "sql: no rows in result set" {
 			return nil, nil
 		}
 
@@ -104,6 +109,11 @@ func (repo *DeviceRepository) GetClientDeviceTokens(clientID string) ([]string, 
 	rows, err := stmt.Query(clientID)
 
 	if err != nil {
+
+		if err.Error() == "sql: no rows in result set" {
+			return nil, nil
+		}
+
 		_, _ = fmt.Fprintf(os.Stderr, "GetClientDeviceTokens: query failed: %v\n", err)
 		return nil, err
 	}
@@ -135,14 +145,19 @@ func (repo *DeviceRepository) GetClientDevices(clientID string) ([]*core.Device,
 	stmt, err := repo.dbHolder.db.Prepare(selectClientDevicesSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientDevices: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientDevices: preparing statement failed: %v\n", err)
 		return nil, err
 	}
 
 	rows, err := stmt.Query(clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetClientDevices: query failed: %v\n", err)
+
+		if err.Error() == "sql: no rows in result set" {
+			return nil, nil
+		}
+
+		_, _ = fmt.Fprintf(os.Stderr, "GetClientDevices: query failed: %v\n", err)
 		return nil, err
 	}
 
@@ -159,7 +174,7 @@ func (repo *DeviceRepository) GetClientDevices(clientID string) ([]*core.Device,
 		devices = append(devices, &core.Device{ID: id, Token: token, ClientID: clientID})
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "GetClientDevices: row scan failed: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "GetClientDevices: row scan failed: %v\n", err)
 			return nil, err
 		}
 	}
@@ -174,14 +189,14 @@ func (repo *DeviceRepository) DeleteClientDevices(clientID string) error {
 	stmt, err := repo.dbHolder.db.Prepare(deleteClientDevicesSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteClientDevices: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteClientDevices: preparing statement failed: %v\n", err)
 		return err
 	}
 
 	_, err = stmt.Exec(clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteClientDevices: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteClientDevices: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -195,14 +210,14 @@ func (repo *DeviceRepository) DeleteDevice(id string) error {
 	stmt, err := repo.dbHolder.db.Prepare(deleteDeviceSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteDevice: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteDevice: preparing statement failed: %v\n", err)
 		return err
 	}
 
 	_, err = stmt.Exec(id)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "DeleteDevice: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "DeleteDevice: statement execution failed: %v\n", err)
 		return err
 	}
 
@@ -216,14 +231,14 @@ func (repo *DeviceRepository) CreateDevice(id string, token string, clientID str
 	stmt, err := repo.dbHolder.db.Prepare(createDeviceSQL)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "CreateDevice: preparing statement failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "CreateDevice: preparing statement failed: %v\n", err)
 		return err
 	}
 
 	_, err = stmt.Exec(id, token, clientID)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "CreateDevice: statement execution failed: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "CreateDevice: statement execution failed: %v\n", err)
 		return err
 	}
 

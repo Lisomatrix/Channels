@@ -33,10 +33,10 @@ var selectEventsSinceTimeStampSQL = `SELECT SenderID, EventType, Payload, TimeSt
 var selectEventsBetweenTimeStampsSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) AND TimeStamp >= ? AND TimeStamp <= ?;`
 
 // * The new one is based on primary key since its auto incremented to it's way faster
-var selectLastEventsSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) ORDER BY ID ASC LIMIT ?;`
+var selectLastEventsSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) ORDER BY ID DESC LIMIT ?;`
 
 var selectLastEventsSinceTimeStampSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM (SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) AND TimeStamp >= ?) as t ORDER BY TimeStamp ASC LIMIT ?;`
-var selectLastEventsBeforeTimeStampSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM (SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = $1 AND AppID = $2) AND TimeStamp <= $3) as t ORDER BY TimeStamp DESC LIMIT $4;`
+var selectLastEventsBeforeTimeStampSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM (SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) AND TimeStamp <= ?) as t ORDER BY TimeStamp DESC LIMIT ?;`
 
 
 // NewSQLChannelRepository - Create a new instance of SQLChannelRepository
@@ -157,7 +157,7 @@ func (repo *ChannelRepository) JoinClient(appID string, channelID string, client
 		return err
 	}
 
-	_, err = stmt.Exec(channelID, clientID, appID)
+	_, err = stmt.Exec(clientID, channelID, appID)
 
 	if err != nil {
 		// If duplicate was found then ignore the error
@@ -185,7 +185,7 @@ func (repo *ChannelRepository) LeaveClient(appID string, channelID string, clien
 		return err
 	}
 
-	_, err = stmt.Exec(channelID, clientID, appID)
+	_, err = stmt.Exec(channelID, appID, clientID)
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "LeaveChannel: statement execution failed: %v\n", err)
@@ -474,6 +474,11 @@ func (repo *ChannelRepository) GetAppChannel(appID string, channelID string) (*c
 	chann, err := repo.singleRowToChannel(row)
 
 	if err != nil {
+
+		if err.Error() == "sql: no rows in result set" {
+			return nil, nil
+		}
+
 		_, _ = fmt.Fprintf(os.Stderr, "GetAppChannel: row scan failed: %v\n", err)
 		return nil, err
 	}

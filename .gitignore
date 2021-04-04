@@ -15,3 +15,11 @@ config_remote_postgres.yaml
 channels_firebase.json
 
 .DS_Store
+
+heroku_config.yaml
+
+config_mysql_local.yaml
+
+config_local.yaml
+
+channels_exec
