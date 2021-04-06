@@ -40,6 +40,10 @@ func PGXSetConnectionParams(dbUser string, dbPassword string, dbHost string, dbP
 		"password=%s dbname=%s sslmode=prefer", host, port, user, password, dbName)
 }
 
+func (storage *PGXDatabaseStorage) GetDB() *pgxpool.Pool {
+	return storage.db
+}
+
 // GetAppRepository - Get SQL implementation of AppRepository
 func (storage *PGXDatabaseStorage) GetAppRepository() core.AppRepository {
 

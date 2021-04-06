@@ -21,6 +21,10 @@ var clientStorage *ClientRepository = nil
 var channelStorage *ChannelRepository = nil
 var deviceStorage *DeviceRepository = nil
 
+func (storage *DatabaseStorage) GetDB() *sql.DB {
+	return storage.db
+}
+
 // GetAppRepository - Get SQL implementation of AppRepository
 func (storage *DatabaseStorage) GetAppRepository() core.AppRepository {
 
