@@ -23,9 +23,9 @@ func RemoveChannelIndex(s []*HubChannel, index int) []*HubChannel {
 
 // Session - an updated session handling
 type Session struct {
-	ID                 string
-	connection         Connection
-	isWaitingForAck    bool
+	ID         string
+	connection Connection
+	// isWaitingForAck    bool
 	clientID           string
 	identity           *auth.Identity // User AppID and UserID
 	deviceID           string         // DeviceID is needed so we the same client can have multiple connections from different devices
@@ -251,6 +251,17 @@ func (session *Session) notifyAck(requestID uint32, status bool) {
 // Otherwise we publish but won't store the event, nor send the notify back
 func (session *Session) CanPublish(channelID string, event *ChannelEvent, publishRequest *PublishRequest) {
 
+	if session.identity.IsAdminKind() {
+		didPublish := session.hub.Publish(channelID, event, publishRequest.ID != 0)
+
+		//* INFO: If ID == 0 then we don't need a response back and it won't be stored
+		if publishRequest != nil && publishRequest.ID != 0 {
+			session.notifyAck(publishRequest.ID, didPublish)
+		}
+
+		return
+	}
+
 	for _, c := range session.AllowedChannels {
 		if c == channelID {
 
@@ -264,6 +275,8 @@ func (session *Session) CanPublish(channelID string, event *ChannelEvent, publis
 			return
 		}
 	}
+
+	session.notifyAck(publishRequest.ID, false)
 }
 
 // GetIdentifier - Get client and device identifier
