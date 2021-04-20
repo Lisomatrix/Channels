@@ -2,10 +2,11 @@ package core
 
 import (
 	"fmt"
-	"github.com/lisomatrix/channels/channels/auth"
 	"log"
 	"os"
 	"time"
+
+	"github.com/lisomatrix/channels/channels/auth"
 
 	"github.com/rs/xid"
 )
@@ -153,7 +154,7 @@ func (session *Session) Publish(data []byte) {
 	session.connection.Send(data)
 }
 
-func (session *Session) onHeartBeat()  {
+func (session *Session) onHeartBeat() {
 	// Update timestamps
 	if session.isClosed {
 		return
@@ -171,7 +172,6 @@ func (session *Session) onNewMessage(data []byte) {
 	var newEvent NewEvent
 
 	err := newEvent.Unmarshal(data)
-
 
 	if err != nil {
 		log.Println(err)
@@ -273,6 +273,18 @@ func (session *Session) GetIdentifier() string {
 
 // CanSubscribe - Check if user is allowed to subscribe, if so subscribe
 func (session *Session) CanSubscribe(channelID string) bool {
+
+	if session.identity.IsAdminKind() {
+		channel := session.hub.Subscribe(channelID, session)
+
+		if channel == nil {
+			return false
+		}
+
+		session.SubscribedChannels = append(session.SubscribedChannels, channel)
+
+		return true
+	}
 
 	for _, c := range session.AllowedChannels {
 		if c == channelID {
