@@ -3,10 +3,10 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
-	"github.com/lisomatrix/channels/channels/core"
 	"os"
 	"strings"
 
+	"github.com/lisomatrix/channels/channels/core"
 )
 
 // Channel SQL
@@ -33,11 +33,10 @@ var selectEventsSinceTimeStampSQL = `SELECT SenderID, EventType, Payload, TimeSt
 var selectEventsBetweenTimeStampsSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) AND TimeStamp >= ? AND TimeStamp <= ?;`
 
 // * The new one is based on primary key since its auto incremented to it's way faster
-var selectLastEventsSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) ORDER BY ID ASC LIMIT ?;`
+var selectLastEventsSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) ORDER BY ID DESC LIMIT ?;`
 
 var selectLastEventsSinceTimeStampSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM (SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) AND TimeStamp >= ?) as t ORDER BY TimeStamp ASC LIMIT ?;`
 var selectLastEventsBeforeTimeStampSQL = `SELECT SenderID, EventType, Payload, TimeStamp FROM (SELECT SenderID, EventType, Payload, TimeStamp FROM Channel_Event WHERE ChannelID = (SELECT ID FROM Channel WHERE ChannelID = ? AND AppID = ?) AND TimeStamp <= ?) as t ORDER BY TimeStamp DESC LIMIT ?;`
-
 
 // NewSQLChannelRepository - Create a new instance of SQLChannelRepository
 func NewSQLChannelRepository(db *DatabaseStorage) *ChannelRepository {
@@ -884,7 +883,7 @@ func (repo *ChannelRepository) rowToChannel(rows *sql.Rows) (*core.Channel, erro
 		Persistent: persistent,
 		Private:    private,
 		Presence:   presence,
-		Push: push,
+		Push:       push,
 	}
 
 	return chann, err
@@ -914,7 +913,7 @@ func (repo *ChannelRepository) singleRowToChannel(rows *sql.Row) (*core.Channel,
 		Persistent: persistent,
 		Private:    private,
 		Presence:   presence,
-		Push: 		push,
+		Push:       push,
 	}
 
 	return chann, err

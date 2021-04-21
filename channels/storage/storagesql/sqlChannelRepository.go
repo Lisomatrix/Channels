@@ -3,10 +3,10 @@ package storagesql
 import (
 	"database/sql"
 	"fmt"
-	"github.com/lisomatrix/channels/channels/core"
 	"os"
 	"strings"
 
+	"github.com/lisomatrix/channels/channels/core"
 )
 
 // Channel SQL
@@ -33,7 +33,7 @@ var selectEventsSinceTimeStampSQL = `SELECT "SenderID", "EventType", "Payload", 
 var selectEventsBetweenTimeStampsSQL = `SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM "Channel_Event" WHERE "ChannelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $2) AND "TimeStamp" >= $3 AND "TimeStamp" <= $4;`
 
 // * The new one is based on primary key since its auto incremented to it's way faster
-var selectLastEventsSQL = `SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM "Channel_Event" WHERE "ChannelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $2) ORDER BY "ID" ASC LIMIT $3;`
+var selectLastEventsSQL = `SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM "Channel_Event" WHERE "ChannelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $2) ORDER BY "ID" DESC LIMIT $3;`
 
 var selectLastEventsSinceTimeStampSQL = `SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM (SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM "Channel_Event" WHERE "ChannelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $2) AND "TimeStamp" >= $3) as "t" ORDER BY "TimeStamp" ASC LIMIT $4;`
 var selectLastEventsBeforeTimeStampSQL = `SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM (SELECT "SenderID", "EventType", "Payload", "TimeStamp" FROM "Channel_Event" WHERE "ChannelID" = (SELECT "ID" FROM "Channel" WHERE "ChannelID" = $1 AND "AppID" = $2) AND "TimeStamp" <= $3) as "t" ORDER BY "TimeStamp" DESC LIMIT $4;`
@@ -868,7 +868,7 @@ func (repo *ChannelRepository) rowToChannel(rows *sql.Rows) (*core.Channel, erro
 		Persistent: persistent,
 		Private:    private,
 		Presence:   presence,
-		Push:	 	push,
+		Push:       push,
 	}
 
 	return chann, err
@@ -898,7 +898,7 @@ func (repo *ChannelRepository) singleRowToChannel(rows *sql.Row) (*core.Channel,
 		Persistent: persistent,
 		Private:    private,
 		Presence:   presence,
-		Push: push,
+		Push:       push,
 	}
 
 	return chann, err
