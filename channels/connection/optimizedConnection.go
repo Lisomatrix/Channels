@@ -17,10 +17,10 @@ type OWebSocketConnection struct {
 	ws                 net.Conn
 	onCloseCB          func()
 	onMessage          func([]byte)
-	onHb			   func()
+	onHb               func()
 	isClosed           bool
-	pongTimer		   *time.Timer
-	didReceivePong 	   bool
+	pongTimer          *time.Timer
+	didReceivePong     bool
 }
 
 // IsConnected - If connection is still alive
@@ -34,8 +34,8 @@ func (connection *OWebSocketConnection) Init(ws net.Conn) {
 	connection.ws = ws
 	connection.messageSendChannel = make(chan []byte, 10)
 
-	go connection.readMessages()
 	go connection.writeMessages()
+	go connection.readMessages()
 }
 
 // Send - Send the data to the client
@@ -127,12 +127,16 @@ func (connection *OWebSocketConnection) readMessages() {
 
 func (connection *OWebSocketConnection) writeMessages() {
 	pingPongTimer := time.NewTimer(pingPeriod)
-	waitingForPong := false
+	waitingForPong := true
 
 	defer func() {
 		pingPongTimer.Stop()
 		connection.Close()
 	}()
+
+	if err := wsutil.WriteServerMessage(connection.ws, ws.OpPing, nil); err != nil {
+		return
+	}
 
 	for {
 
@@ -160,7 +164,6 @@ func (connection *OWebSocketConnection) writeMessages() {
 		case <-pingPongTimer.C:
 			{
 				pingPongTimer.Stop()
-
 				if connection.isClosed {
 					return
 				}
@@ -173,6 +176,12 @@ func (connection *OWebSocketConnection) writeMessages() {
 						connection.didReceivePong = false
 						pingPongTimer.Reset(pingPeriod)
 
+						if err := wsutil.WriteServerMessage(connection.ws, ws.OpPing, nil); err != nil {
+							return
+						}
+
+						waitingForPong = true
+
 					} else {
 						connection.Close()
 					}
@@ -180,11 +189,11 @@ func (connection *OWebSocketConnection) writeMessages() {
 				} else {
 
 					/*
-					// If we can't send a ping then it's probably closed
-					_, _ = connection.ws.Write(ws.CompiledPing)
+						// If we can't send a ping then it's probably closed
+						_, _ = connection.ws.Write(ws.CompiledPing)
 
-					waitingForPong = true
-					pingPongTimer.Reset(pongWait)*/
+						waitingForPong = true
+						pingPongTimer.Reset(pongWait)*/
 				}
 			}
 		}

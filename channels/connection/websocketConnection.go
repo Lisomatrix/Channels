@@ -36,7 +36,7 @@ type WebSocketConnection struct {
 	ws                 *websocket.Conn
 	onCloseCB          func()
 	onMessage          func([]byte)
-	onHB			   func()
+	onHB               func()
 	isClosed           bool
 }
 
