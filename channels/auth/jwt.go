@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+
 	"gopkg.in/square/go-jose.v2"
 	"gopkg.in/square/go-jose.v2/jwt"
 )
@@ -20,21 +21,33 @@ func SetIssuer(issuer string) {
 // CreateToken - Create token with given info
 func CreateToken(clientID string, role string, appID string, expire *jwt.NumericDate) (string, error) {
 
-	sig, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.HS256, Key: jwtSecret}, (&jose.SignerOptions{}).WithType("JWT"))
+	sig, err := jose.NewEncrypter(
+		jose.A128GCM,
+		jose.Recipient{Algorithm: jose.DIRECT, Key: jwtSecret},
+		(&jose.EncrypterOptions{}).WithType("JWT"),
+	)
+
+	//sig, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.HS256, Key: jwtSecret}, (&jose.SignerOptions{}).WithType("JWT"))
+
+	if err != nil {
+		fmt.Printf("Error creating jwt %s \n", err)
+		return "", err
+	}
 
 	c := &jwt.Claims{
 		Subject: clientID,
 		Issuer:  issuer,
-		Expiry: expire,
+		Expiry:  expire,
 	}
 
 	tokenData := Identity{
-		AppID: appID,
+		AppID:    appID,
 		ClientID: clientID,
-		Role: role,
+		Role:     role,
 	}
 
-	raw, err := jwt.Signed(sig).Claims(c).Claims(tokenData).CompactSerialize()
+	raw, err := jwt.Encrypted(sig).Claims(c).Claims(tokenData).CompactSerialize()
+	//raw, err := jwt.Signed(sig).Claims(c).Claims(tokenData).CompactSerialize()
 
 	if err != nil {
 		fmt.Printf("Error creating jwt %s \n", err)
@@ -68,7 +81,8 @@ func VerifyToken(tokenString string) (Identity, bool) {
 
 	var tokenData Identity
 
-	token, err := jwt.ParseSigned(tokenString)
+	token, err := jwt.ParseEncrypted(tokenString)
+	//token, err := jwt.ParseSigned(tokenString)
 
 	if err != nil {
 		return tokenData, false
@@ -79,7 +93,6 @@ func VerifyToken(tokenString string) (Identity, bool) {
 	if err := token.Claims(jwtSecret, &out); err != nil {
 		return out, false
 	}
-
 
 	return out, true
 }

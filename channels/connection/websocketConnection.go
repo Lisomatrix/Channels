@@ -115,6 +115,7 @@ func (connection *WebSocketConnection) readMessages() {
 	})
 
 	for {
+
 		_, msg, err := connection.ws.ReadMessage()
 
 		if connection.isClosed {
