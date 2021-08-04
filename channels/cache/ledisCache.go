@@ -2,9 +2,10 @@ package cache
 
 import (
 	"fmt"
-	"github.com/lisomatrix/channels/channels/core"
 	"os"
 	"time"
+
+	"github.com/lisomatrix/channels/channels/core"
 
 	lediscfg "github.com/ledisdb/ledisdb/config"
 	"github.com/ledisdb/ledisdb/ledis"
@@ -18,7 +19,7 @@ type LedisCacheStorage struct {
 
 // GetChannelEvents - Get given cached events from the channel queue
 func (cache *LedisCacheStorage) GetChannelEvents(channelID string, appID string, amount int64) []*core.ChannelEvent {
-	dData, err := cache.db.LRange([]byte("app:" + appID + "channel:" + channelID + ":events"), 0, int32(amount))
+	dData, err := cache.db.LRange([]byte("app:"+appID+"channel:"+channelID+":events"), 0, int32(amount))
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed get LRANGE result %v\n", err)
@@ -69,7 +70,7 @@ func (cache *LedisCacheStorage) GetChannelEventsSize(channelID string, appID str
 
 // GetOldestChannelEvent - Get oldest event that is stored in cache
 func (cache *LedisCacheStorage) GetOldestChannelEvent(channelID string, appID string) *core.ChannelEvent {
-	results, err := cache.db.LRange([]byte("app:" + appID + ":channel:" + channelID + ":events"), -1, -1)
+	results, err := cache.db.LRange([]byte("app:"+appID+":channel:"+channelID+":events"), -1, -1)
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed get LRANGE result %v\n", err)
@@ -120,8 +121,7 @@ func (cache *LedisCacheStorage) StoreChannelEvent(channelID string, appID string
 	// Push new event and update expire period
 	amount, err := cache.db.LPush(key, eventData)
 
-	_, _ = cache.db.Expire(key, int64((24 * time.Hour).Seconds()))
-
+	_, _ = cache.db.Expire(key, int64((4 * time.Hour).Seconds()))
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed get LPUSH result %v\n", err)
@@ -166,7 +166,7 @@ func (cache *LedisCacheStorage) AddDevice(clientID string, device *core.Device) 
 
 // GetClientDevices - Get all client devices
 func (cache *LedisCacheStorage) GetClientDevices(clientID string) []*core.Device {
-	data, err  := cache.db.HGetAll([]byte(clientID+":device"))
+	data, err := cache.db.HGetAll([]byte(clientID + ":device"))
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed to get devices data %v\n", err)
@@ -189,7 +189,7 @@ func (cache *LedisCacheStorage) GetClientDevices(clientID string) []*core.Device
 
 // RemoveClient - Remove client from cache
 func (cache *LedisCacheStorage) RemoveClient(appID string, clientID string) {
-	_, err := cache.db.Del([]byte(appID+":client:"+clientID))
+	_, err := cache.db.Del([]byte(appID + ":client:" + clientID))
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed to remove client %v\n", err)
@@ -198,7 +198,7 @@ func (cache *LedisCacheStorage) RemoveClient(appID string, clientID string) {
 
 // RemoveClientChannels - Remove client channels from cache
 func (cache *LedisCacheStorage) RemoveClientChannels(clientID string) {
-	_, err := cache.db.Del([]byte("client:"+clientID+":channels"))
+	_, err := cache.db.Del([]byte("client:" + clientID + ":channels"))
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed to remove client channels %v\n", err)
@@ -207,7 +207,7 @@ func (cache *LedisCacheStorage) RemoveClientChannels(clientID string) {
 
 // RemoveApp - Remove app from cache
 func (cache *LedisCacheStorage) RemoveApp(appID string) {
-	_, err := cache.db.Del([]byte("app:"+appID))
+	_, err := cache.db.Del([]byte("app:" + appID))
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed to remove app %v\n", err)
@@ -216,7 +216,7 @@ func (cache *LedisCacheStorage) RemoveApp(appID string) {
 
 // RemoveChannel - Remove channel from cache
 func (cache *LedisCacheStorage) RemoveChannel(appID string, channelID string) {
-	_, err := cache.db.Del([]byte(appID+":channel:"+channelID))
+	_, err := cache.db.Del([]byte(appID + ":channel:" + channelID))
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed to remove channel %v\n", err)
@@ -230,10 +230,10 @@ func (cache *LedisCacheStorage) StoreClient(appID string, clientID string, clien
 	go func() {
 
 		err := cache.db.HMset(
-				[]byte(appID+":client:"+clientID),
-				ledis.FVPair{Value: []byte(client.Username), Field: []byte("username")},
-				ledis.FVPair{Value: []byte(client.Extra), Field: []byte("extra")},
-			)
+			[]byte(appID+":client:"+clientID),
+			ledis.FVPair{Value: []byte(client.Username), Field: []byte("username")},
+			ledis.FVPair{Value: []byte(client.Extra), Field: []byte("extra")},
+		)
 
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed to store client %v\n", err)
@@ -244,7 +244,7 @@ func (cache *LedisCacheStorage) StoreClient(appID string, clientID string, clien
 
 // CheckClientExistence - Check if there is a client in cache
 func (cache *LedisCacheStorage) CheckClientExistence(appID string, clientID string) bool {
-	amount, err := cache.db.Exists([]byte(appID+":client:"+clientID))
+	amount, err := cache.db.Exists([]byte(appID + ":client:" + clientID))
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed to check client existence %v\n", err)
@@ -278,7 +278,6 @@ func (cache *LedisCacheStorage) GetClient(appID string, clientID string) *core.C
 		}
 	}
 
-
 	// If username is empty it wasn't in cache
 	if cachedClient.Username == "" {
 		return nil
@@ -303,7 +302,7 @@ func (cache *LedisCacheStorage) StoreApp(appID string, name string) {
 
 // GetApp - Get app from cache
 func (cache *LedisCacheStorage) GetApp(appID string) *core.App {
-	data, err := cache.db.Get([]byte("app:"+appID))
+	data, err := cache.db.Get([]byte("app:" + appID))
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed to parse cached app %v\n", err)
@@ -333,7 +332,7 @@ func (cache *LedisCacheStorage) StoreChannel(appID string, channelID string, cha
 			Persistent: channel.Persistent,
 			Private:    channel.Private,
 			Presence:   channel.Presence,
-			Push: 		channel.Push,
+			Push:       channel.Push,
 		}
 
 		data, err := proto.Marshal(&cachedChannel)
@@ -354,7 +353,7 @@ func (cache *LedisCacheStorage) StoreChannel(appID string, channelID string, cha
 
 // GetChannel - Get channel from cache
 func (cache *LedisCacheStorage) GetChannel(appID string, channelID string) *core.Channel {
-	data, err := cache.db.Get([]byte(appID+":channel:"+channelID))
+	data, err := cache.db.Get([]byte(appID + ":channel:" + channelID))
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed to retrieve cached channel %v\n", err)
@@ -384,13 +383,13 @@ func (cache *LedisCacheStorage) GetChannel(appID string, channelID string) *core
 		Persistent: cachedChannel.Persistent,
 		Private:    cachedChannel.Private,
 		Presence:   cachedChannel.Presence,
-		Push: 		cachedChannel.Push,
+		Push:       cachedChannel.Push,
 	}
 }
 
 // CheckChannelExistence - Check if there is channel in cache
 func (cache *LedisCacheStorage) CheckChannelExistence(appID string, channelID string) bool {
-	amount, err := cache.db.Exists([]byte(appID+":channel:"+channelID))
+	amount, err := cache.db.Exists([]byte(appID + ":channel:" + channelID))
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed to verify channel existence %v\n", err)
@@ -419,7 +418,7 @@ func (cache *LedisCacheStorage) AddClientChannels(clientID string, channelIDs []
 
 // GetClientChannels - Get channels client can access from cache
 func (cache *LedisCacheStorage) GetClientChannels(clientID string) ([]string, bool) {
-	dData, err := cache.db.SMembers([]byte("client:"+clientID+":channels"))
+	dData, err := cache.db.SMembers([]byte("client:" + clientID + ":channels"))
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Ledis Cache: failed to retrieve client channels %v\n", err)
@@ -457,11 +456,9 @@ func (cache *LedisCacheStorage) RemoveClientChannel(clientID string, channelID s
 	}
 }
 
-
 func (cache *LedisCacheStorage) GetDB() *ledis.DB {
 	return cache.db
 }
-
 
 // NewLedisCacheStorage - Create a new ledis cache instance
 func NewLedisCacheStorage() *LedisCacheStorage {

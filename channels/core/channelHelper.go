@@ -138,8 +138,9 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 		return false, err
 	}
 
-	// Update cache
-	GetEngine().GetCacheStorage().AddClientChannel(clientID, channelID)
+	// Clear cache
+	GetEngine().GetCacheStorage().RemoveClientChannels(clientID)
+	//GetEngine().GetCacheStorage().AddClientChannel(clientID, channelID)
 
 	// Notify current connected clients
 	hub := GetEngine().HubsHandler.ContainsHub(appID)
@@ -159,8 +160,8 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 		}
 
 		clientJoined := ClientJoin{
-			ChannelID:            channelID,
-			ClientID:             clientID,
+			ChannelID: channelID,
+			ClientID:  clientID,
 		}
 
 		// Store and cache new event
@@ -232,8 +233,8 @@ func LeaveChannel(appID string, channelID string, clientID string) (bool, error)
 		return false, err
 	}
 
-	// Update cache
-	GetEngine().GetCacheStorage().RemoveClientChannel(clientID, channelID)
+	// Clear cache
+	GetEngine().GetCacheStorage().RemoveClientChannels(clientID)
 
 	// Notify current connected clients
 	hub := GetEngine().HubsHandler.ContainsHub(appID)
@@ -258,8 +259,8 @@ func LeaveChannel(appID string, channelID string, clientID string) (bool, error)
 		GetEngine().GetCacheStorage().StoreChannelEvent(channelID, appID, newChannelEvent)
 
 		clientLeave := &ClientLeave{
-			ChannelID:            channelID,
-			ClientID:             clientID,
+			ChannelID: channelID,
+			ClientID:  clientID,
 		}
 
 		// If there are clients connected to hub and channel

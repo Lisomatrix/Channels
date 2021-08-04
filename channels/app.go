@@ -5,9 +5,10 @@ package channels
 
 import (
 	"fmt"
-	"github.com/lisomatrix/channels/channels/push"
 	"log"
 	"os"
+
+	"github.com/lisomatrix/channels/channels/push"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/lisomatrix/channels/channels/cache"
@@ -42,13 +43,15 @@ func CORSMiddleware() gin.HandlerFunc {
 func Start(host string, port string, router *gin.Engine) {
 	gin.SetMode(gin.ReleaseMode)
 
-	router.Use(gzip.Gzip(gzip.DefaultCompression))
 	router.Use(CORSMiddleware())
 
 	// WebSocket route
 	router.GET("/", connection.RequestHandler)
 	router.GET("/optimized", connection.OptimizedRequestHandler)
 	// router.GET("/optimized", wsHandler)
+
+	// Only enabled GZIP Compressesion on non websocket connections
+	router.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	// Device routes
 	router.POST("/device", core.CreateDevice)
