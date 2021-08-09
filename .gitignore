@@ -23,3 +23,4 @@ config_mysql_local.yaml
 config_local.yaml
 
 channels_exec
+cmd/example1/__debug_bin

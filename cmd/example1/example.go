@@ -122,24 +122,17 @@ func main() {
 
 	stor := gormsql.NewGormDatabaseStorage(db)
 
-	if err := stor.GetClientRepository().Migrate(); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := stor.GetChannelRepository().Migrate(); err != nil {
-		log.Fatal(err)
-	}
-
-	dbStorage := pgxsql.NewSQLStorageDatabase()
+	//dbStorage := pgxsql.NewSQLStorageDatabase()
 	cacheHandler := cache.NewLedisCacheStorage()
 	presenceHandler := presence.NewLedisPresenceWithDB(cacheHandler.GetDB())
 	publisherHandler := publisher.NewEmptyPublisher()
 	pushHandler := &push.EmptyPushNotificationHandler{}
 
 	config := core.EngineConfig{
-		ServerID:                "",
-		HubsHandler:             core.NewHubsHandler(&HubsHandlerHook{}),
-		DBStorage:               dbStorage,
+		ServerID:    "",
+		HubsHandler: core.NewHubsHandler(&HubsHandlerHook{}),
+		DBStorage:   stor,
+		//DBStorage:               dbStorage,
 		CacheStorage:            cacheHandler,
 		PublishHandler:          publisherHandler,
 		PresenceHandler:         presenceHandler,

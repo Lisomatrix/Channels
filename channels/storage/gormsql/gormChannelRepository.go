@@ -21,6 +21,15 @@ type ChannelsChannel struct {
 	Clients    []ChannelsClient `gorm:"many2many:channel_client;"`
 }
 
+type ChannelsChannelEvent struct {
+	ID        int64  `gorm:"column:id;primaryKey;not null;autoIncrement"`
+	SenderID  string `gorm:"column:sender_id;not null"`
+	EventType string `gorm:"column:event_type;not null"`
+	TimeStamp int64  `gorm:"column:timestamp;not null"`
+	Payload   string `gorm:"column:payload"`
+	ChannelID string `gorm:"column:channel_id"`
+}
+
 func (c *ChannelsChannel) TableName() string {
 	return "channel"
 }
@@ -30,7 +39,15 @@ type GormChannelRepository struct {
 }
 
 func (repo *GormChannelRepository) Migrate() error {
-	return repo.gormDB.AutoMigrate(&ChannelsChannel{})
+	if err := repo.gormDB.AutoMigrate(&ChannelsChannel{}); err != nil {
+		return err
+	}
+
+	if err := repo.gormDB.AutoMigrate(&ChannelsChannelEvent{}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (repo *GormChannelRepository) CreateChannel(id string, appID string, name string, createdAt int64, isClosed bool, extra string, persistent bool, private bool, presence bool, push bool) error {
@@ -253,4 +270,157 @@ func (repo *GormChannelRepository) ExistsAppChannel(appID string, channelID stri
 	}
 
 	return true, nil
+}
+
+func (repo *GormChannelRepository) AddChannelEvent(appID string, channelID string, event *core.ChannelEvent) error {
+
+	return repo.gormDB.Create(&ChannelsChannelEvent{
+		SenderID:  event.SenderID,
+		EventType: event.EventType,
+		TimeStamp: event.Timestamp,
+		Payload:   event.Payload,
+		ChannelID: channelID,
+	}).Error
+}
+
+func (repo *GormChannelRepository) AddChannelEvents(items []core.InsertItem) error {
+
+	events := make([]ChannelsChannelEvent, 0, len(items))
+
+	for _, item := range items {
+		events = append(events, ChannelsChannelEvent{
+			SenderID:  item.Event.SenderID,
+			EventType: item.Event.EventType,
+			TimeStamp: item.Event.Timestamp,
+			Payload:   item.Event.Payload,
+			ChannelID: item.Event.ChannelID,
+		})
+	}
+
+	return repo.gormDB.Create(&events).Error
+}
+
+func (repo *GormChannelRepository) GetChannelEventsAfter(appID string, channelID string, timestamp int64) ([]*core.ChannelEvent, error) {
+	events := make([]ChannelsChannelEvent, 0)
+	subQuery := repo.gormDB.Select("id").Where(map[string]interface{}{"app_id": appID, "channel_id": channelID})
+
+	tx := repo.gormDB.Where("channel_id = ? and timestamp >= ?", subQuery, timestamp).Find(&events)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	coreEvents := make([]*core.ChannelEvent, 0, len(events))
+
+	for _, e := range events {
+		coreEvents = append(coreEvents, &core.ChannelEvent{
+			SenderID:  e.SenderID,
+			EventType: e.EventType,
+			Payload:   e.Payload,
+			ChannelID: e.ChannelID,
+			Timestamp: e.TimeStamp,
+		})
+	}
+
+	return coreEvents, nil
+}
+
+func (repo *GormChannelRepository) GetChannelEventsAfterAndBefore(appID string, channelID string, timestampAfter int64, timestampBefore int64) ([]*core.ChannelEvent, error) {
+	events := make([]ChannelsChannelEvent, 0)
+	subQuery := repo.gormDB.Select("id").Where(map[string]interface{}{"app_id": appID, "channel_id": channelID})
+
+	tx := repo.gormDB.Where("channel_id = ? and timestamp >= ? and timestamp <= ?", subQuery, timestampAfter, timestampBefore).Find(&events)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	coreEvents := make([]*core.ChannelEvent, 0, len(events))
+
+	for _, e := range events {
+		coreEvents = append(coreEvents, &core.ChannelEvent{
+			SenderID:  e.SenderID,
+			EventType: e.EventType,
+			Payload:   e.Payload,
+			ChannelID: e.ChannelID,
+			Timestamp: e.TimeStamp,
+		})
+	}
+
+	return coreEvents, nil
+}
+
+func (repo *GormChannelRepository) GetChannelLastEvents(appID string, channelID string, amount int64) ([]*core.ChannelEvent, error) {
+	events := make([]ChannelsChannelEvent, 0)
+	subQuery := repo.gormDB.Select("id").Where(map[string]interface{}{"app_id": appID, "channel_id": channelID})
+
+	tx := repo.gormDB.Where("channel_id = ?", subQuery).Order("id desc").Limit(int(amount)).Find(&events)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	coreEvents := make([]*core.ChannelEvent, 0, len(events))
+
+	for _, e := range events {
+		coreEvents = append(coreEvents, &core.ChannelEvent{
+			SenderID:  e.SenderID,
+			EventType: e.EventType,
+			Payload:   e.Payload,
+			ChannelID: e.ChannelID,
+			Timestamp: e.TimeStamp,
+		})
+	}
+
+	return coreEvents, nil
+}
+
+func (repo *GormChannelRepository) GetChannelLastEventsAfter(appID string, channelID string, amount int64, timestamp int64) ([]*core.ChannelEvent, error) {
+	events := make([]ChannelsChannelEvent, 0)
+	subQuery := repo.gormDB.Select("id").Where(map[string]interface{}{"app_id": appID, "channel_id": channelID})
+
+	tx := repo.gormDB.Where("channel_id = ? and timestamp >= ?", subQuery, timestamp).Limit(int(amount)).Order("timestamp asc").Limit(int(amount)).Find(&events)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	coreEvents := make([]*core.ChannelEvent, 0, len(events))
+
+	for _, e := range events {
+		coreEvents = append(coreEvents, &core.ChannelEvent{
+			SenderID:  e.SenderID,
+			EventType: e.EventType,
+			Payload:   e.Payload,
+			ChannelID: e.ChannelID,
+			Timestamp: e.TimeStamp,
+		})
+	}
+
+	return coreEvents, nil
+}
+
+func (repo *GormChannelRepository) GetChannelLastEventsBefore(appID string, channelID string, amount int64, timestamp int64) ([]*core.ChannelEvent, error) {
+	events := make([]ChannelsChannelEvent, 0)
+	subQuery := repo.gormDB.Select("id").Where(map[string]interface{}{"app_id": appID, "channel_id": channelID})
+
+	tx := repo.gormDB.Where("channel_id = ? and timestamp <= ?", subQuery, timestamp).Limit(int(amount)).Order("timestamp desc").Limit(int(amount)).Find(&events)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	coreEvents := make([]*core.ChannelEvent, 0, len(events))
+
+	for _, e := range events {
+		coreEvents = append(coreEvents, &core.ChannelEvent{
+			SenderID:  e.SenderID,
+			EventType: e.EventType,
+			Payload:   e.Payload,
+			ChannelID: e.ChannelID,
+			Timestamp: e.TimeStamp,
+		})
+	}
+
+	return coreEvents, nil
 }

@@ -21,6 +21,10 @@ type GormDeviceRepository struct {
 	gormDB *gorm.DB
 }
 
+func (repo *GormDeviceRepository) Migrate() error {
+	return repo.gormDB.AutoMigrate(&ChannelsDevice{})
+}
+
 func (repo *GormDeviceRepository) CreateDevice(id, token, clientID string) error {
 	return repo.gormDB.Create(ChannelsDevice{
 		ID:       id,

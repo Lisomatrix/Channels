@@ -3,6 +3,7 @@ package gormsql
 import (
 	"log"
 
+	"github.com/lisomatrix/channels/channels/core"
 	"gorm.io/gorm"
 )
 
@@ -23,12 +24,24 @@ func NewGormDatabaseStorage(gormDB *gorm.DB) *GormDatabaseStorage {
 func (storage *GormDatabaseStorage) Migrate() {
 
 	// App Table
-	if err := storage.GetAppRepository().Migrate(); err != nil {
+	if err := storage.GetAppRepository().(*GormAppRepository).Migrate(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := storage.GetDeviceRepository().(*GormDeviceRepository).Migrate(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := storage.GetClientRepository().(*GormClientRepository).Migrate(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := storage.GetChannelRepository().(*GormChannelRepository).Migrate(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (storage *GormDatabaseStorage) GetDeviceRepository() *GormDeviceRepository {
+func (storage *GormDatabaseStorage) GetDeviceRepository() core.DeviceRepository {
 	if deviceStorage == nil {
 		deviceStorage = &GormDeviceRepository{gormDB: storage.gormDB}
 	}
@@ -36,7 +49,7 @@ func (storage *GormDatabaseStorage) GetDeviceRepository() *GormDeviceRepository 
 	return deviceStorage
 }
 
-func (storage *GormDatabaseStorage) GetAppRepository() *GormAppRepository {
+func (storage *GormDatabaseStorage) GetAppRepository() core.AppRepository {
 	if appStorage == nil {
 		appStorage = &GormAppRepository{gormDB: storage.gormDB}
 	}
@@ -44,7 +57,7 @@ func (storage *GormDatabaseStorage) GetAppRepository() *GormAppRepository {
 	return appStorage
 }
 
-func (storage *GormDatabaseStorage) GetClientRepository() *GormClientRepository {
+func (storage *GormDatabaseStorage) GetClientRepository() core.ClientRepository {
 	if clientStorage == nil {
 		clientStorage = &GormClientRepository{gormDB: storage.gormDB}
 	}
@@ -52,7 +65,7 @@ func (storage *GormDatabaseStorage) GetClientRepository() *GormClientRepository 
 	return clientStorage
 }
 
-func (storage *GormDatabaseStorage) GetChannelRepository() *GormChannelRepository {
+func (storage *GormDatabaseStorage) GetChannelRepository() core.ChannelRepository {
 	if channelStorage == nil {
 		channelStorage = &GormChannelRepository{gormDB: storage.gormDB}
 	}
