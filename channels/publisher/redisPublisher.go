@@ -30,9 +30,9 @@ func (publisher *RedisPublisher) PublishChannelPresenceChange(appID string, chan
 	}
 
 	channelPresenceChange := ExternalJoinLeaveClientEvent{
-		ClientID:             clientID,
-		ChannelID:            channelID,
-		PresenceType:         presenceType,
+		ClientID:     clientID,
+		ChannelID:    channelID,
+		PresenceType: presenceType,
 	}
 
 	newEvent := ExternalNewEvent{
@@ -65,14 +65,14 @@ func (publisher *RedisPublisher) PublishChannelAccessChange(appID string, channe
 	}
 
 	accessEvent := ExternalChannelAccessEvent{
-		ExternalAccessType:   accessType,
-		ClientID:             clientID,
-		ChannelID:            channelID,
+		ExternalAccessType: accessType,
+		ClientID:           clientID,
+		ChannelID:          channelID,
 	}
 
 	newEvent := ExternalNewEvent{
-		Type:              ExternalNewEventType_ChannelAccess,
-		ServerID:          core.GetEngine().GetServerID(),
+		Type:                ExternalNewEventType_ChannelAccess,
+		ServerID:            core.GetEngine().GetServerID(),
 		ExternalAccessEvent: &accessEvent,
 	}
 
@@ -101,8 +101,8 @@ func (publisher *RedisPublisher) PublishChannelOnlineChange(appID string, channe
 	}
 
 	newEvent := ExternalNewEvent{
-		Type:              ExternalNewEventType_OnlineStatus,
-		ServerID:          core.GetEngine().GetServerID(),
+		Type:                 ExternalNewEventType_OnlineStatus,
+		ServerID:             core.GetEngine().GetServerID(),
 		ExternalOnlineStatus: &onlineStatusEvent,
 	}
 
@@ -132,8 +132,8 @@ func (publisher *RedisPublisher) PublishChannelEvent(appID string, channelID str
 	}
 
 	newEvent := ExternalNewEvent{
-		Type:         ExternalNewEventType_ChannelEvent,
-		ServerID:     core.GetEngine().GetServerID(),
+		Type:                 ExternalNewEventType_ChannelEvent,
+		ServerID:             core.GetEngine().GetServerID(),
 		ExternalPublishEvent: &publishEvent,
 	}
 
@@ -204,7 +204,7 @@ func (publisher *RedisPublisher) handleSubscribeMessages() {
 		appID := parts[0]
 		channelID := parts[1]
 
-		hub := core.GetEngine().HubsHandler.ContainsHub(appID)
+		hub := core.GetEngine().GetHubsHandler().ContainsHub(appID)
 
 		// If there is no hub then we don't have clients from the hub
 		if hub == nil {
@@ -256,8 +256,8 @@ func (publisher *RedisPublisher) handleSubscribeMessages() {
 			if event.PresenceType == ExternalChannelPresenceType_Join {
 
 				clientJoined := core.ClientJoin{
-					ChannelID:            event.ChannelID,
-					ClientID:             event.ClientID,
+					ChannelID: event.ChannelID,
+					ClientID:  event.ClientID,
 				}
 
 				if data, err := clientJoined.Marshal(); err != nil {
@@ -267,8 +267,8 @@ func (publisher *RedisPublisher) handleSubscribeMessages() {
 				}
 			} else if event.PresenceType == ExternalChannelPresenceType_Leave {
 				clientLeave := core.ClientLeave{
-					ChannelID:            event.ChannelID,
-					ClientID:             event.ClientID,
+					ChannelID: event.ChannelID,
+					ClientID:  event.ClientID,
 				}
 
 				if data, err := clientLeave.Marshal(); err != nil {

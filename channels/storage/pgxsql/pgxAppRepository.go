@@ -3,15 +3,16 @@ package pgxsql
 import (
 	"context"
 	"fmt"
-	"github.com/lisomatrix/channels/channels/core"
 	"os"
 
+	"github.com/lisomatrix/channels/channels/core"
 )
 
 // App SQL
 var createAppSQL = `INSERT INTO "App"("AppID", "Name") VALUES ( $1 , $2 );`
 var deleteAppSQL = `DELETE FROM "App" WHERE "AppID" = $1 ;`
 var getAppsSQL = `SELECT "AppID", "Name" FROM "App";`
+var getAppSQL = `SELECT "AppID", "Name" FROM "App" WHERE "AppID" = $1 ;`
 var updateAppSQL = `UPDATE "App" SET "Name" = $1 WHERE "AppID" = $2 ;`
 var appExistsSQL = `SELECT COUNT("AppID") AS "EXISTS" FROM "App" WHERE "AppID" = $1 LIMIT 1;`
 
@@ -43,6 +44,21 @@ func (storage *PGXAppRepository) DeleteApp(id string) error {
 	}
 
 	return nil
+}
+
+func (storage *PGXAppRepository) GetApp(id string) (*core.App, error) {
+	row := storage.dbHolder.db.QueryRow(storage.ctx, getAppSQL)
+
+	var app core.App
+
+	err := row.Scan(&app)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "GetApp: query scan failed: %v\n", err)
+		return nil, err
+	}
+
+	return &app, nil
 }
 
 // GetApps - Get all stored apps in the database

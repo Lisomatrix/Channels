@@ -2,10 +2,11 @@ package core
 
 import (
 	"fmt"
-	"go.uber.org/atomic"
 	"os"
 	"sync"
 	"time"
+
+	"go.uber.org/atomic"
 )
 
 // HubChannel - Handler for topic
@@ -14,9 +15,9 @@ type HubChannel struct {
 	connectedUsers         sync.Map //[string(session_identifier)]*Session
 	connectedClientsStatus sync.Map //[string(clientID)]TimeStamp
 	isClosing              bool
-	connectedCounter	   atomic.Int32
-	hub 				   *Hub
-	inactivityTimer		   *time.Timer
+	connectedCounter       atomic.Int32
+	hub                    *Hub
+	inactivityTimer        *time.Timer
 }
 
 // DeleteChannel - Unsubscribe all clients and stop accepting subscriptions
@@ -43,8 +44,8 @@ func (channel *HubChannel) PublishJoinLeave(eventType NewEvent_NewEventType, pay
 	}
 
 	newEvent := NewEvent{
-		Type:                 eventType,
-		Payload:              payload,
+		Type:    eventType,
+		Payload: payload,
 	}
 
 	eventData, err := newEvent.Marshal()
@@ -81,8 +82,8 @@ func (channel *HubChannel) ExternalPublish(channelEvent *ChannelEvent) bool {
 	}
 
 	newEvent := NewEvent{
-		Type:                 NewEvent_PUBLISH,
-		Payload:              data,
+		Type:    NewEvent_PUBLISH,
+		Payload: data,
 	}
 
 	eventData, err := newEvent.Marshal()
@@ -142,7 +143,7 @@ func (channel *HubChannel) Publish(channelEvent *ChannelEvent, shouldStore bool)
 	if channel.Data.Presence && channel.Data.Push {
 
 		clientIDs := make([]string, 0)
-		channel.connectedClientsStatus.Range(func (key interface{}, value interface{}) bool {
+		channel.connectedClientsStatus.Range(func(key interface{}, value interface{}) bool {
 			clientID := key.(string)
 			status := value.(ClientStatus)
 
@@ -158,7 +159,7 @@ func (channel *HubChannel) Publish(channelEvent *ChannelEvent, shouldStore bool)
 			EventType: channelEvent.EventType,
 			Timestamp: channelEvent.Timestamp,
 			ClientIDs: clientIDs,
-			Payload: channelEvent.Payload,
+			Payload:   channelEvent.Payload,
 		}
 
 		GetEngine().GetPushHandler().EnqueueRequest(&request)
@@ -366,22 +367,22 @@ func (channel *HubChannel) shouldNotifyOnlinePresenceChange(session *Session) {
 
 		channel.PublishStatusChange(&statusUpdate)
 	}
-/*
-	GetEngine().GetPresence().AddOnlineChannelDevice(channel.Data.AppID, channel.Data.ID, session.clientID, session.deviceID)
+	/*
+		GetEngine().GetPresence().AddOnlineChannelDevice(channel.Data.AppID, channel.Data.ID, session.clientID, session.deviceID)
 
-	// Get how many are left
-	amount := GetEngine().GetPresence().GetChannelAmountOfClientDevices(channel.Data.AppID, channel.Data.ID, session.clientID)
+		// Get how many are left
+		amount := GetEngine().GetPresence().GetChannelAmountOfClientDevices(channel.Data.AppID, channel.Data.ID, session.clientID)
 
-	if amount == 1 {
-		statusUpdate := OnlineStatusUpdate{
-			ChannelID: channel.Data.ID,
-			ClientID:  session.clientID,
-			Status:    true,
-			Timestamp: timeStamp,
-		}
+		if amount == 1 {
+			statusUpdate := OnlineStatusUpdate{
+				ChannelID: channel.Data.ID,
+				ClientID:  session.clientID,
+				Status:    true,
+				Timestamp: timeStamp,
+			}
 
-		channel.PublishStatusChange(&statusUpdate)
-	}*/
+			channel.PublishStatusChange(&statusUpdate)
+		}*/
 }
 
 // shouldNotifyOfflinePresenceChange - Check if an offline status update should be done
@@ -396,7 +397,6 @@ func (channel *HubChannel) shouldNotifyOfflinePresenceChange(session *Session) {
 
 		// wait for timer
 		<-timer.C
-
 
 		lastTimeStamp := time.Unix(GetEngine().GetPresence().GetClientTimestamp(session.clientID), 0)
 
@@ -420,48 +420,48 @@ func (channel *HubChannel) shouldNotifyOfflinePresenceChange(session *Session) {
 			timer.Stop()
 		}
 		/*
-		// Delay the deletion of the device in the channel, otherwise on shouldNotifyOnline detects 0 devices and sets as online
-		// Remove this devices from channel online devices
-		GetEngine().GetPresence().RemoveOnlineChannelDevice(channel.Data.AppID, channel.Data.ID, session.clientID, session.deviceID)
+			// Delay the deletion of the device in the channel, otherwise on shouldNotifyOnline detects 0 devices and sets as online
+			// Remove this devices from channel online devices
+			GetEngine().GetPresence().RemoveOnlineChannelDevice(channel.Data.AppID, channel.Data.ID, session.clientID, session.deviceID)
 
-		// Check if the remove device is connected
-		// If so then it reconnected and there is no need to publish the status update
-		if GetEngine().GetPresence().IsClientDeviceConnectToChannel(channel.Data.AppID, channel.Data.ID, session.clientID, session.deviceID) {
-			timer.Stop()
-			return
-		}
+			// Check if the remove device is connected
+			// If so then it reconnected and there is no need to publish the status update
+			if GetEngine().GetPresence().IsClientDeviceConnectToChannel(channel.Data.AppID, channel.Data.ID, session.clientID, session.deviceID) {
+				timer.Stop()
+				return
+			}
 
-		// If the device is not back online
-		// We must check if client is not connected with another device
-		// If the he is, then ignore the status update
-		amount := GetEngine().GetPresence().GetChannelAmountOfClientDevices(channel.Data.AppID, channel.Data.ID, session.clientID)
+			// If the device is not back online
+			// We must check if client is not connected with another device
+			// If the he is, then ignore the status update
+			amount := GetEngine().GetPresence().GetChannelAmountOfClientDevices(channel.Data.AppID, channel.Data.ID, session.clientID)
 
-		if amount < 0 {
-			amount = 0
-		}
+			if amount < 0 {
+				amount = 0
+			}
 
-		if amount > 0 {
-			timer.Stop()
-			return
-		}
+			if amount > 0 {
+				timer.Stop()
+				return
+			}
 
-		statusUpdate := OnlineStatusUpdate{
-			ChannelID: channel.Data.ID,
-			ClientID:  session.clientID,
-			Status:    false, // If not remove is online
-			Timestamp: time.Now().Unix(),
-		}
+			statusUpdate := OnlineStatusUpdate{
+				ChannelID: channel.Data.ID,
+				ClientID:  session.clientID,
+				Status:    false, // If not remove is online
+				Timestamp: time.Now().Unix(),
+			}
 
-		status := ClientStatus{
-			Status:    statusUpdate.Status,
-			Timestamp: statusUpdate.Timestamp,
-		}
+			status := ClientStatus{
+				Status:    statusUpdate.Status,
+				Timestamp: statusUpdate.Timestamp,
+			}
 
-		// Update channel status
-		channel.connectedClientsStatus.Store(session.clientID, status)
+			// Update channel status
+			channel.connectedClientsStatus.Store(session.clientID, status)
 
-		channel.PublishStatusChange(&statusUpdate)
-		timer.Stop()*/
+			channel.PublishStatusChange(&statusUpdate)
+			timer.Stop()*/
 	}()
 }
 
@@ -505,7 +505,7 @@ func (channel *HubChannel) shouldCloseChannel() {
 		channel.inactivityTimer.Stop()
 
 		if channel.connectedCounter.Load() == 0 {
-			fmt.Printf("No subscribers on channel %s for the last 15 mins, closing channel...", channel.Data.ID)
+			fmt.Printf("No subscribers on channel %s for the last 15 mins, closing channel...\n", channel.Data.ID)
 			channel.hub.DeleteChannel(channel.Data.ID)
 		}
 
@@ -538,7 +538,7 @@ func NewChannel(ID string, AppID string, hub *Hub) *HubChannel {
 
 	hubChannel := &HubChannel{
 		Data: chann,
-		hub: hub,
+		hub:  hub,
 	}
 
 	if chann.Presence {

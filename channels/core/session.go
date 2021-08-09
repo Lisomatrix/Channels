@@ -21,11 +21,17 @@ func RemoveChannelIndex(s []*HubChannel, index int) []*HubChannel {
 	return append(s[:index], s[index+1:]...)
 }
 
+type SessionData struct {
+	SessionID       string
+	AppID           string
+	DeviceID        string
+	AllowedChannels []string
+}
+
 // Session - an updated session handling
 type Session struct {
-	ID         string
-	connection Connection
-	// isWaitingForAck    bool
+	ID                 string
+	connection         Connection
 	clientID           string
 	identity           *auth.Identity // User AppID and UserID
 	deviceID           string         // DeviceID is needed so we the same client can have multiple connections from different devices
@@ -34,6 +40,11 @@ type Session struct {
 	SubscribedChannels []*HubChannel
 	AllowedChannels    []string
 	SessionIdentifier  string // We create a string once and store now, instead of creating every time
+	hook               SessionHook
+}
+
+func (session *Session) SetHook(hook SessionHook) {
+	session.hook = hook
 }
 
 // Init - initialize properties and start sending messages
@@ -84,6 +95,14 @@ func (session *Session) Init(connection Connection, deviceID string, identity *a
 
 	// Update user device online status
 	GetEngine().GetPresence().UpdateClientTimestamp(session.clientID)
+
+	if session.hook != nil {
+		session.hook.OnInitialized(session)
+	}
+}
+
+func (session *Session) GetHub() *Hub {
+	return session.hub
 }
 
 // AddChannel - Add channel while client is connected
@@ -123,7 +142,7 @@ func (session *Session) RemoveChannel(channelID string) {
 	var found = false
 
 	for index, channel := range session.SubscribedChannels {
-		if channel == channel {
+		if channelID == channel.Data.ID {
 
 			session.SubscribedChannels = RemoveChannelIndex(session.SubscribedChannels, index)
 			found = true
@@ -143,6 +162,31 @@ func (session *Session) RemoveChannel(channelID string) {
 	}
 }
 
+func (session *Session) Send(channelEvent *ChannelEvent) error {
+	data, err := channelEvent.Marshal()
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal channel event: %v\n", err)
+		return err
+	}
+
+	newEvent := NewEvent{
+		Type:    NewEvent_PUBLISH,
+		Payload: data,
+	}
+
+	newEventData, err := newEvent.Marshal()
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Session Publish: failed to marhal new channel event: %v\n", err)
+		return err
+	}
+
+	session.Publish(newEventData)
+
+	return nil
+}
+
 // Publish - Send data to subscribed client
 func (session *Session) Publish(data []byte) {
 
@@ -150,7 +194,6 @@ func (session *Session) Publish(data []byte) {
 		return
 	}
 
-	//session.connection.Send(data)
 	session.connection.Send(data)
 }
 
@@ -166,6 +209,10 @@ func (session *Session) onHeartBeat() {
 
 func (session *Session) onClose() {
 	session.Close()
+
+	if session.hook != nil {
+		session.hook.OnClose(session)
+	}
 }
 
 func (session *Session) onNewMessage(data []byte) {
@@ -251,32 +298,33 @@ func (session *Session) notifyAck(requestID uint32, status bool) {
 // Otherwise we publish but won't store the event, nor send the notify back
 func (session *Session) CanPublish(channelID string, event *ChannelEvent, publishRequest *PublishRequest) {
 
+	isAllowed := false
+
 	if session.identity.IsAdminKind() {
-		didPublish := session.hub.Publish(channelID, event, publishRequest.ID != 0)
-
-		//* INFO: If ID == 0 then we don't need a response back and it won't be stored
-		if publishRequest != nil && publishRequest.ID != 0 {
-			session.notifyAck(publishRequest.ID, didPublish)
-		}
-
-		return
+		isAllowed = true
 	}
 
-	for _, c := range session.AllowedChannels {
-		if c == channelID {
-
-			didPublish := session.hub.Publish(channelID, event, publishRequest.ID != 0)
-
-			//* INFO: If ID == 0 then we don't need a response back and it won't be stored
-			if publishRequest != nil && publishRequest.ID != 0 {
-				session.notifyAck(publishRequest.ID, didPublish)
+	if !isAllowed {
+		for _, c := range session.AllowedChannels {
+			if c == channelID {
+				isAllowed = true
+				break
 			}
-
-			return
 		}
 	}
 
-	session.notifyAck(publishRequest.ID, false)
+	didPublish := false
+
+	if session.hook == nil && isAllowed {
+		didPublish = session.hub.Publish(channelID, event, publishRequest.ID != 0, session)
+	} else if session.hook != nil && session.hook.CanPublish(channelID, session, isAllowed) {
+		didPublish = session.hub.Publish(channelID, event, publishRequest.ID != 0, session)
+	}
+
+	//* INFO: If ID == 0 then we don't need a response back and it won't be stored
+	if publishRequest != nil && publishRequest.ID != 0 {
+		session.notifyAck(publishRequest.ID, didPublish)
+	}
 }
 
 // GetIdentifier - Get client and device identifier
@@ -287,7 +335,36 @@ func (session *Session) GetIdentifier() string {
 // CanSubscribe - Check if user is allowed to subscribe, if so subscribe
 func (session *Session) CanSubscribe(channelID string) bool {
 
+	channel, err := GetChannel(session.hub.AppID, channelID)
+
+	if err != nil {
+		log.Println(err)
+		return false
+	} else if channel == nil {
+		return false
+	}
+
+	inAllowedChannels := false
+
+	// if the connection is admin kind
+	// Then it can always subscribe
 	if session.identity.IsAdminKind() {
+		inAllowedChannels = true
+	}
+
+	// Otherwise check if is in allowed channels
+	if !inAllowedChannels {
+		for _, c := range session.AllowedChannels {
+			if c == channelID {
+				inAllowedChannels = true
+				break
+			}
+		}
+	}
+
+	// If is in allowed and there isn't a hook for further checking
+	// Then subscribe
+	if session.hook == nil && inAllowedChannels {
 		channel := session.hub.Subscribe(channelID, session)
 
 		if channel == nil {
@@ -299,18 +376,17 @@ func (session *Session) CanSubscribe(channelID string) bool {
 		return true
 	}
 
-	for _, c := range session.AllowedChannels {
-		if c == channelID {
-			channel := session.hub.Subscribe(channelID, session)
+	// If there is a hook then ask it
+	if session.hook != nil && session.hook.CanSubscribe(channelID, session, inAllowedChannels) {
+		channel := session.hub.Subscribe(channelID, session)
 
-			if channel == nil {
-				return false
-			}
-
-			session.SubscribedChannels = append(session.SubscribedChannels, channel)
-
-			return true
+		if channel == nil {
+			return false
 		}
+
+		session.SubscribedChannels = append(session.SubscribedChannels, channel)
+
+		return true
 	}
 
 	return false

@@ -1,10 +1,11 @@
 package connection
 
 import (
-	"github.com/lisomatrix/channels/channels/auth"
-	"github.com/lisomatrix/channels/channels/core"
 	"log"
 	"net/http"
+
+	"github.com/lisomatrix/channels/channels/auth"
+	"github.com/lisomatrix/channels/channels/core"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -88,7 +89,7 @@ func RequestHandler(context *gin.Context) {
 			client = c
 		}*/
 
-	hub := core.GetEngine().HubsHandler.GetHub(identity.AppID)
+	hub := core.GetEngine().GetHubsHandler().GetHub(identity.AppID)
 
 	connection.Init(conn)
 	session.Init(connection, deviceID, &identity, identity.ClientID, hub)
@@ -128,21 +129,36 @@ func OptimizedRequestHandler(context *gin.Context) {
 		return
 	}
 
-	identity, isOK := auth.VerifyToken(token)
+	authHook := core.GetEngine().GetAuthHook()
 
-	if !isOK || !identity.CanUseAppID(appID) {
-		writer.WriteHeader(http.StatusUnauthorized)
-		return
+	var identity *auth.Identity = nil
+
+	if authHook != nil {
+		iden := authHook.Authenticate(token, appID, deviceID, request)
+
+		if iden != nil {
+			identity = iden
+		}
+	}
+
+	if identity == nil {
+		iden, isOK := auth.VerifyToken(token)
+
+		if !isOK || !identity.CanUseAppID(appID) {
+			writer.WriteHeader(http.StatusUnauthorized)
+			return
+		} else {
+			identity = &iden
+		}
 	}
 
 	// Start session handler
 	var connection = new(OWebSocketConnection)
 	var session = new(core.Session)
 
-	hub := core.GetEngine().HubsHandler.GetHub(identity.AppID)
+	hub := core.GetEngine().GetHubsHandler().GetHub(identity.AppID)
 
-
-	session.Init(connection, deviceID, &identity, identity.ClientID, hub)
+	session.Init(connection, deviceID, identity, identity.ClientID, hub)
 
 	// Upgrade to WebSocket
 	conn, _, _, err := ws.UpgradeHTTP(request, writer)

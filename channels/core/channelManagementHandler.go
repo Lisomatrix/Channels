@@ -1,25 +1,26 @@
 package core
 
 import (
-	jsoniter "github.com/json-iterator/go"
 	"fmt"
-	"github.com/lisomatrix/channels/channels/auth"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
+	"github.com/lisomatrix/channels/channels/auth"
+
 	"github.com/gin-gonic/gin"
 )
 
-type getChannelMessagesRequest struct {
-	ChannelID string `json:"channelID"`
-	Timestamp int64  `json:"timestamp"`
-}
+// type getChannelMessagesRequest struct {
+// 	ChannelID string `json:"channelID"`
+// 	Timestamp int64  `json:"timestamp"`
+// }
 
-type getChannelMessagesResponse struct {
-	Events []*outEvent `json:"events"`
-}
+// type getChannelMessagesResponse struct {
+// 	Events []*outEvent `json:"events"`
+// }
 
 type channelPublishRequest struct {
 	//ChannelID string
@@ -39,10 +40,10 @@ type CreateChannelRequest struct {
 	Push       bool     `json:"push"`
 }
 
-type outEvent struct {
-	Timestamp int64  `json:"timestamp"`
-	Data      []byte `json:"data"`
-}
+// type outEvent struct {
+// 	Timestamp int64  `json:"timestamp"`
+// 	Data      []byte `json:"data"`
+// }
 
 // PostEventHandler - Publish event into channel
 // /channel/:channelID/publish
@@ -140,7 +141,7 @@ func PostEventHandler(context *gin.Context) {
 	}
 
 	// If no hub exists then we don't have clients from this hub
-	hub := GetEngine().HubsHandler.ContainsHub(appID)
+	hub := GetEngine().GetHubsHandler().ContainsHub(appID)
 
 	if hub == nil {
 		writer.WriteHeader(http.StatusOK)
@@ -215,7 +216,7 @@ func CreateChannelHandler(context *gin.Context) {
 		Persistent: createChannelRequest.Persistent,
 		Private:    createChannelRequest.Private,
 		Presence:   createChannelRequest.Presence,
-		Push: 		createChannelRequest.Push,
+		Push:       createChannelRequest.Push,
 	}
 
 	if isOK, err := CreateChannel(appID, &newChannel); err != nil {
@@ -291,7 +292,6 @@ func PostJoinChannel(context *gin.Context) {
 		writer.WriteHeader(http.StatusNotFound)
 	}
 
-
 }
 
 // PostLeaveChannel - Remove user from channel
@@ -332,7 +332,6 @@ func PostLeaveChannel(context *gin.Context) {
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
 
 	clientChannels, err := GetEngine().GetChannelRepository().GetClientAllowedChannels(clientID)
 
@@ -498,141 +497,149 @@ type GetChannelsResponse struct {
 
 // GetOpenChannels - Get all public channels
 // GET /channel/open
-func GetOpenChannels(context *gin.Context) {
-	request := context.Request
-	writer := context.Writer
+// func GetOpenChannels(context *gin.Context) {
+// 	request := context.Request
+// 	writer := context.Writer
 
-	// Get AppID and Token
-	appID := request.Header.Get("AppID")
-	token := request.Header.Get("Authorization")
+// 	// Get AppID and Token
+// 	appID := request.Header.Get("AppID")
+// 	token := request.Header.Get("Authorization")
 
-	if token == "" {
-		writer.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+// 	if token == "" {
+// 		writer.WriteHeader(http.StatusUnauthorized)
+// 		return
+// 	}
 
-	identity, isOK := auth.VerifyToken(token)
+// 	var identity *auth.Identity = nil
 
-	// If not valid return
-	if !isOK || !identity.CanUseAppID(appID) {
-		writer.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+// 	if GetEngine().GetAuthHook() != nil {
+// 		identity = GetEngine().GetAuthHook().Authenticate(token, appID, "", request)
+// 	}
 
-	var response GetChannelsResponse
+// 	if identity == nil {
+// 		identity, isOK := auth.VerifyToken(token)
 
-	// If AppID given, and user is authorized to use AppID
-	// Then fetch App specific channels
-	if appID != "" && identity.CanUseAppID(appID) {
+// 		// If not valid return
+// 		if !isOK || !identity.CanUseAppID(appID) {
+// 			writer.WriteHeader(http.StatusUnauthorized)
+// 			return
+// 		}
+// 	}
 
-		if channels, err := GetEngine().GetChannelRepository().GetAppPublicChannels(appID); err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get app open channels %v\n", err)
-			writer.WriteHeader(http.StatusInternalServerError)
-		} else {
-			response.Channels = channels
-		}
+// 	var response GetChannelsResponse
 
-		// Else if no given appID and user is SuperAdmin
-		// Fetch all open channels from all apps
-	} else if appID == "" && identity.IsSuperAdmin() {
+// 	// If AppID given, and user is authorized to use AppID
+// 	// Then fetch App specific channels
+// 	if appID != "" && identity.CanUseAppID(appID) {
 
-		if channels, err := GetEngine().GetChannelRepository().GetAllPublicChannels(); err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get all open channels %v\n", err)
-			writer.WriteHeader(http.StatusInternalServerError)
-		} else {
-			response.Channels = channels
-		}
-		// Otherwise there are no permissions for this request
-	} else {
-		writer.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+// 		if channels, err := GetEngine().GetChannelRepository().GetAppPublicChannels(appID); err != nil {
+// 			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get app open channels %v\n", err)
+// 			writer.WriteHeader(http.StatusInternalServerError)
+// 		} else {
+// 			response.Channels = channels
+// 		}
 
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	data, err := json.Marshal(response)
+// 		// Else if no given appID and user is SuperAdmin
+// 		// Fetch all open channels from all apps
+// 	} else if appID == "" && identity.IsSuperAdmin() {
 
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to marshal response %v\n", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+// 		if channels, err := GetEngine().GetChannelRepository().GetAllPublicChannels(); err != nil {
+// 			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get all open channels %v\n", err)
+// 			writer.WriteHeader(http.StatusInternalServerError)
+// 		} else {
+// 			response.Channels = channels
+// 		}
+// 		// Otherwise there are no permissions for this request
+// 	} else {
+// 		writer.WriteHeader(http.StatusUnauthorized)
+// 		return
+// 	}
 
-	writer.WriteHeader(http.StatusOK)
-	_, _ = writer.Write(data)
-}
+// 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+// 	data, err := json.Marshal(response)
+
+// 	if err != nil {
+// 		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to marshal response %v\n", err)
+// 		writer.WriteHeader(http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	writer.WriteHeader(http.StatusOK)
+// 	_, _ = writer.Write(data)
+// }
 
 // GetPrivateChannels - Get all private channels
 // GET /channel/private
-func GetPrivateChannels(context *gin.Context) {
-	request := context.Request
-	writer := context.Writer
+// func GetPrivateChannels(context *gin.Context) {
+// 	request := context.Request
+// 	writer := context.Writer
 
-	// Get AppID and Token
-	appID := request.Header.Get("AppID")
-	token := request.Header.Get("Authorization")
+// 	// Get AppID and Token
+// 	appID := request.Header.Get("AppID")
+// 	token := request.Header.Get("Authorization")
 
-	if token == "" {
-		writer.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+// 	if token == "" {
+// 		writer.WriteHeader(http.StatusUnauthorized)
+// 		return
+// 	}
 
-	identity, isOK := auth.VerifyToken(token)
+// 	identity, isOK := auth.VerifyToken(token)
 
-	// If not valid return
-	if !isOK || !identity.CanUseAppID(appID) {
-		writer.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+// 	// If not valid return
+// 	if !isOK || !identity.CanUseAppID(appID) {
+// 		writer.WriteHeader(http.StatusUnauthorized)
+// 		return
+// 	}
 
-	var response GetChannelsResponse
+// 	var response GetChannelsResponse
 
-	// If AppID given, and user is authorized to use AppID, then check if user is admin
-	// Then fetch App specific channels
-	if appID != "" && identity.CanUseAppID(appID) && identity.IsAdminKind() {
+// 	// If AppID given, and user is authorized to use AppID, then check if user is admin
+// 	// Then fetch App specific channels
+// 	if appID != "" && identity.CanUseAppID(appID) && identity.IsAdminKind() {
 
-		if channels, err := GetEngine().GetChannelRepository().GetAppPrivateChannels(appID); err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get app open channels %v\n", err)
-			writer.WriteHeader(http.StatusInternalServerError)
-		} else {
-			response.Channels = channels
-		}
+// 		if channels, err := GetEngine().GetChannelRepository().GetAppPrivateChannels(appID); err != nil {
+// 			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get app open channels %v\n", err)
+// 			writer.WriteHeader(http.StatusInternalServerError)
+// 		} else {
+// 			response.Channels = channels
+// 		}
 
-		// If AppID is given, and user is authorized to use AppID
-		// Then check if is client
-	} else if appID != "" && identity.CanUseAppID(appID) && identity.IsClient() {
+// 		// If AppID is given, and user is authorized to use AppID
+// 		// Then check if is client
+// 	} else if appID != "" && identity.CanUseAppID(appID) && identity.IsClient() {
 
-		if channels, err := GetEngine().GetChannelRepository().GetClientPrivateChannels(identity.ClientID); err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get app open channels %v\n", err)
-			writer.WriteHeader(http.StatusInternalServerError)
-		} else {
-			response.Channels = channels
-		}
+// 		if channels, err := GetEngine().GetChannelRepository().GetClientPrivateChannels(identity.ClientID); err != nil {
+// 			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get app open channels %v\n", err)
+// 			writer.WriteHeader(http.StatusInternalServerError)
+// 		} else {
+// 			response.Channels = channels
+// 		}
 
-		// Else if no given appID and user is SuperAdmin
-		// Fetch all open channels from all apps
-	} else if appID == "" && identity.IsSuperAdmin() {
+// 		// Else if no given appID and user is SuperAdmin
+// 		// Fetch all open channels from all apps
+// 	} else if appID == "" && identity.IsSuperAdmin() {
 
-		if channels, err := GetEngine().GetChannelRepository().GetAllPrivateChannels(); err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get all open channels %v\n", err)
-			writer.WriteHeader(http.StatusInternalServerError)
-		} else {
-			response.Channels = channels
-		}
-		// Otherwise there are no permissions for this request
-	} else {
-		writer.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+// 		if channels, err := GetEngine().GetChannelRepository().GetAllPrivateChannels(); err != nil {
+// 			_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to get all open channels %v\n", err)
+// 			writer.WriteHeader(http.StatusInternalServerError)
+// 		} else {
+// 			response.Channels = channels
+// 		}
+// 		// Otherwise there are no permissions for this request
+// 	} else {
+// 		writer.WriteHeader(http.StatusUnauthorized)
+// 		return
+// 	}
 
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	data, err := json.Marshal(response)
+// 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+// 	data, err := json.Marshal(response)
 
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to marshal response %v\n", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+// 	if err != nil {
+// 		_, _ = fmt.Fprintf(os.Stderr, "HTTP Get open channels: failed to marshal response %v\n", err)
+// 		writer.WriteHeader(http.StatusInternalServerError)
+// 		return
+// 	}
 
-	writer.WriteHeader(http.StatusOK)
-	_, _ = writer.Write(data)
-}
+// 	writer.WriteHeader(http.StatusOK)
+// 	_, _ = writer.Write(data)
+// }

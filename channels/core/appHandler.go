@@ -2,11 +2,12 @@
 package core
 
 import (
-	jsoniter "github.com/json-iterator/go"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/lisomatrix/channels/channels/auth"
 
@@ -74,7 +75,7 @@ func CreateApp(context *gin.Context) {
 
 	// If not found check from database
 	if app == nil {
-		exists, err := GetEngine().GetAppRepository().AppExists(createAppRequest.AppID)
+		app, err := GetEngine().GetAppRepository().GetApp(createAppRequest.AppID)
 
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "HTTP Create App: failed to check app existence %v\n", err)
@@ -82,7 +83,7 @@ func CreateApp(context *gin.Context) {
 			return
 		}
 
-		if exists {
+		if app == nil {
 			writer.WriteHeader(http.StatusConflict)
 			return
 		}
@@ -209,7 +210,7 @@ func UpdateApp(context *gin.Context) {
 	// If app not found in cache
 	if app == nil {
 		// Check its exitence in the database
-		exists, err := GetEngine().GetAppRepository().AppExists(appID)
+		app, err := GetEngine().GetAppRepository().GetApp(appID)
 
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "HTTP Update App: failed to check app existence %v\n", err)
@@ -218,7 +219,7 @@ func UpdateApp(context *gin.Context) {
 		}
 
 		// If not found then the request is invalid
-		if !exists {
+		if app == nil {
 			writer.WriteHeader(http.StatusNotFound)
 			return
 		}

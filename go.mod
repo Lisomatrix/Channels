@@ -20,7 +20,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/jackc/pgmock v0.0.0-20201204152224-4fe30f7445fd // indirect
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
-	github.com/jackc/pgx/v4 v4.10.1
+	github.com/jackc/pgx/v4 v4.11.0
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/json-iterator/go v1.1.10
 	github.com/kr/text v0.2.0 // indirect
@@ -36,10 +36,10 @@ require (
 	github.com/rs/xid v1.2.1
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/ugorji/go v1.2.4 // indirect
 	go.uber.org/atomic v1.6.0
-	golang.org/x/crypto v0.0.0-20210314154223-e6e6c4f2bb5b // indirect
 	golang.org/x/net v0.0.0-20210316092652-d523dce5a7f4 // indirect
 	golang.org/x/sys v0.0.0-20210316164454-77fc1eacc6aa // indirect
 	google.golang.org/api v0.42.0
@@ -49,4 +49,6 @@ require (
 	gopkg.in/square/go-jose.v2 v2.5.1
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gorm.io/driver/postgres v1.1.0
+	gorm.io/gorm v1.21.12 // indirect
 )

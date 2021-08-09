@@ -4,19 +4,11 @@
 package channels
 
 import (
-	"fmt"
-	"log"
-	"os"
-
-	"github.com/lisomatrix/channels/channels/push"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-contrib/gzip"
-	"github.com/lisomatrix/channels/channels/cache"
 	"github.com/lisomatrix/channels/channels/connection"
 	"github.com/lisomatrix/channels/channels/core"
-	"github.com/lisomatrix/channels/channels/presence"
-	"github.com/lisomatrix/channels/channels/publisher"
-	"github.com/lisomatrix/channels/channels/storage/pgxsql"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,7 +38,7 @@ func Start(host string, port string, router *gin.Engine) {
 	router.Use(CORSMiddleware())
 
 	// WebSocket route
-	router.GET("/", connection.RequestHandler)
+	//router.GET("/", connection.RequestHandler)
 	router.GET("/optimized", connection.OptimizedRequestHandler)
 	// router.GET("/optimized", wsHandler)
 
@@ -70,8 +62,8 @@ func Start(host string, port string, router *gin.Engine) {
 	router.DELETE("/channel/:channelID", core.DeleteChannelHandler)
 	router.POST("/channel/:channelID/close", core.PostCloseChannel)
 	router.POST("/channel/:channelID/open", core.PostOpenChannel)
-	router.GET("/channel/open", core.GetOpenChannels)
-	router.GET("/channel/private", core.GetPrivateChannels)
+	//router.GET("/channel/open", core.GetOpenChannels)
+	//router.GET("/channel/private", core.GetPrivateChannels)
 
 	// Channel Sync routes
 	router.GET("/sync/:channelID/:firstTimeStamp/to/:secondTimeStamp", core.GetMessagesBetweenTimeStamps)
@@ -94,21 +86,6 @@ func Start(host string, port string, router *gin.Engine) {
 	//router.GET("/presence/:clientID", handlers.GetClientDevicesPresences)
 	//router.GET("/online/:clientID", handlers.GetClientOnlineDevices)
 
-	log.Println("Running on host " + host + " port: " + port)
+	log.Info("Running on host %s and port %v", host, port)
 	log.Fatal(router.Run(host + ":" + port))
-}
-
-// InitEngineAndStart channel server
-func InitEngineAndStart(host string, port string) {
-	fmt.Printf("Process ID: %v \n", os.Getpid())
-
-	// TODO: Explore message batching
-
-	// TODO: Create Device HTTP handler
-
-	// TODO: FCM implementation
-
-	dbStorage := pgxsql.NewSQLStorageDatabase()
-	core.InitEngine(dbStorage, cache.NewRedisCacheStorage(), publisher.NewRedisPublisher(), presence.NewRedisPresence(), &push.EmptyPushNotificationHandler{})
-	Start(host, port, gin.Default())
 }

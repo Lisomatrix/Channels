@@ -1,0 +1,1 @@
+time="2021-08-09T21:15:37+01:00" level=info msg="Running on host %s and port %v0.0.0.080" func=github.com/lisomatrix/channels/channels.Start file="/Users/lisomati/Documents/GitHub/Channels/channels/app.go:89"

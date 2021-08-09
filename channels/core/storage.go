@@ -11,8 +11,8 @@ type AppRepository interface {
 	CreateApp(id string, name string) error
 	DeleteApp(id string) error
 	GetApps() ([]*App, error)
+	GetApp(id string) (*App, error)
 	UpdateApp(id string, name string) error
-	AppExists(id string) (bool, error)
 }
 
 // Client - Database representation of a Client
@@ -27,17 +27,17 @@ type Client struct {
 type ClientRepository interface {
 	CreateClient(id string, username string, appID string, extra string) error
 	ExistsAppClient(AppID string, ClientID string) (bool, error)
-	GetClientExtra(id string) (string, error)
+	//GetClientExtra(id string) (string, error)
 	GetAppClient(AppID string, ClientID string) (*Client, error)
 	DeleteClient(id string) error
 	DeleteAppClients(appID string) error
 	UpdateClient(id string, username string, extra string) error
-	UpdateClientUsername(id string, username string) error
-	UpdateClientExtra(id string, extra string) error
+	//UpdateClientUsername(id string, username string) error
+	//UpdateClientExtra(id string, extra string) error
 	GetAppClients(appID string) ([]*Client, error)
-	GetAppClientsCount(appID string) (uint64, error)
+	//GetAppClientsCount(appID string) (uint64, error)
 	GetAllClients() ([]*Client, error)
-	GetAllClientsCount() (uint64, error)
+	//GetAllClientsCount() (uint64, error)
 }
 
 // Device - Database representation of a device
@@ -54,7 +54,7 @@ type DeviceRepository interface {
 	DeleteDevice(id string) error
 	DeleteClientDevices(clientID string) error
 	GetClientDevices(clientID string) ([]*Device, error)
-	GetClientDeviceTokens(clientID string) ([]string, error)
+	//GetClientDeviceTokens(clientID string) ([]string, error)
 	GetClientsDeviceTokens(clientIDs []string, amount int) ([]string, error)
 }
 
@@ -69,7 +69,7 @@ type Channel struct {
 	Persistent bool   `json:"isPersistent"`
 	Private    bool   `json:"isPrivate"`
 	Presence   bool   `json:"isPresence"`
-	Push 	   bool   `json:"isPush"`
+	Push       bool   `json:"isPush"`
 }
 
 // ChannelRepository - Repository for handling Channel, Channel_Event and Channel_Client tables
@@ -95,13 +95,13 @@ type ChannelRepository interface {
 	ExistsAppChannel(appID string, channelID string) (bool, error)
 	GetAppChannel(appID string, channelID string) (*Channel, error)
 
-	GetAppChannels(appID string) ([]*Channel, error)
-	GetAppChannelsCount(appID string) (uint64, error)
+	//GetAppChannels(appID string) ([]*Channel, error)
+	//GetAppChannelsCount(appID string) (uint64, error)
 
-	GetAllPublicChannels() ([]*Channel, error)
-	GetAllPrivateChannels() ([]*Channel, error)
-	GetAllChannels() ([]*Channel, error)
-	GetAllChannelsCount() (uint64, error)
+	//GetAllPublicChannels() ([]*Channel, error)
+	//GetAllPrivateChannels() ([]*Channel, error)
+	//GetAllChannels() ([]*Channel, error)
+	//GetAllChannelsCount() (uint64, error)
 
 	AddChannelEvent(appID string, channelID string, event *ChannelEvent) error
 	AddChannelEvents(items []InsertItem) error

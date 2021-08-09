@@ -76,7 +76,9 @@ func (connection *OWebSocketConnection) Close() {
 
 func (connection *OWebSocketConnection) readMessages() {
 	defer func() {
-		connection.Close()
+		if !connection.isClosed {
+			connection.Close()
+		}
 	}()
 
 	msg := make([]wsutil.Message, 0, 4)
@@ -131,7 +133,9 @@ func (connection *OWebSocketConnection) writeMessages() {
 
 	defer func() {
 		pingPongTimer.Stop()
-		connection.Close()
+		if !connection.isClosed {
+			connection.Close()
+		}
 	}()
 
 	if err := wsutil.WriteServerMessage(connection.ws, ws.OpPing, nil); err != nil {

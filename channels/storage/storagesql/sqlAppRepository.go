@@ -2,14 +2,16 @@ package storagesql
 
 import (
 	"fmt"
-	"github.com/lisomatrix/channels/channels/core"
 	"os"
+
+	"github.com/lisomatrix/channels/channels/core"
 )
 
 // App SQL
 var createAppSQL = `INSERT INTO "App"("AppID", "Name") VALUES ( $1 , $2 );`
 var deleteAppSQL = `DELETE FROM "App" WHERE "AppID" = $1 ;`
 var getAppsSQL = `SELECT "AppID", "Name" FROM "App";`
+var getAppSQL = `SELECT "AppID", "Name" FROM "App" WHERE "AppID" = $1 ;`
 var updateAppSQL = `UPDATE "App" SET "Name" = $1 WHERE "AppID" = $2 ;`
 var appExistsSQL = `SELECT COUNT("AppID") AS "EXISTS" FROM "App" WHERE "AppID" = $1 LIMIT 1;`
 
@@ -58,6 +60,28 @@ func (storage *AppRepository) DeleteApp(id string) error {
 	defer stmt.Close()
 
 	return nil
+}
+
+func (storage *AppRepository) GetApp(id string) (*core.App, error) {
+	stmt, err := storage.dbHolder.db.Prepare(getAppSQL)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "GetApp: preparing statement failed: %v\n", err)
+		return nil, err
+	}
+
+	row := stmt.QueryRow()
+
+	var app core.App
+
+	err = row.Scan(&app)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "GetApp: query scan failed: %v\n", err)
+		return nil, err
+	}
+
+	return &app, nil
 }
 
 // GetApps - Get all stored apps in the database

@@ -1,46 +1,39 @@
 package core
 
 import (
-	"log"
 	"time"
 
 	"github.com/rs/xid"
+	log "github.com/sirupsen/logrus"
 )
 
 // Engine - Holds application components
 type Engine struct {
 	serverID        string
-	HubsHandler     HubsHandler
+	hubsHandler     *HubsHandler
 	databaseStorage DatabaseStorage
 	cacheStorage    CacheStorage
-	insertQueue     StorageInsertQueue
+	insertQueue     StorageInsert
 	publisher       PublishHandler
 	presence        PresenceHandler
-	pushHandler 	PushNotificationHandler
-}
-
-// InsertItem - Insert Item queued
-type InsertItem struct {
-	Event *ChannelEvent
-	AppID string
-}
-
-// StorageInsertQueue - Receives all insert requests and send them into the database
-type StorageInsertQueue struct {
-	insertChannel chan InsertItem
+	pushHandler     PushNotificationHandler
+	storageInsert   StorageInsert
+	authHook        AuthHook
 }
 
 // StoreEvent - Append channel to insert queue
 func (engine *Engine) StoreEvent(appID string, event *ChannelEvent) {
-	engine.insertQueue.insertChannel <- InsertItem{
-		AppID: appID,
-		Event: event,
+	if engine.storageInsert != nil {
+		engine.storageInsert.StoreEvent(appID, event)
 	}
 }
 
 // GetCacheStorage - Get cache storage instance
 func (engine *Engine) GetCacheStorage() CacheStorage {
 	return engine.cacheStorage
+}
+func (engine *Engine) GetHubsHandler() *HubsHandler {
+	return engine.hubsHandler
 }
 
 // GetDeviceRepository - Get persistent repository
@@ -83,6 +76,10 @@ func (engine *Engine) GetPushHandler() PushNotificationHandler {
 	return engine.pushHandler
 }
 
+func (engine *Engine) GetAuthHook() AuthHook {
+	return engine.authHook
+}
+
 var engine *Engine = nil
 
 // GetEngine - Get engine singleton
@@ -90,96 +87,95 @@ func GetEngine() *Engine {
 	return engine
 }
 
-// InitEngine - Create new engine instance
-func InitEngine(dbStorage DatabaseStorage, cacheStorage CacheStorage, publisher PublishHandler, presence PresenceHandler, pushHandler PushNotificationHandler) {
-	engine = &Engine{
-		serverID:        xid.New().String(),
-		HubsHandler:     HubsHandler{},
-		databaseStorage: dbStorage,
-		cacheStorage:    cacheStorage,
-		insertQueue:     StorageInsertQueue{},
-		publisher:       publisher,
-		presence:        presence,
-		pushHandler:	 pushHandler,
+// EngineConfig - Config for the engine, including storage, cache, push notifications
+type EngineConfig struct {
+	ServerID                string                  // ServerID for server indetification, if not provided one will be generated
+	HubsHandler             *HubsHandler            // If nil, then a default one is created
+	DBStorage               DatabaseStorage         // Struct that holds repository
+	CacheStorage            CacheStorage            // Channels, App, Sessions and events cache
+	PublishHandler          PublishHandler          // Publish between servers handler
+	PresenceHandler         PresenceHandler         // Handler for tracking user presence
+	PushNotificationHandler PushNotificationHandler // Handler for sending push notifications
+	DBWorkers               int                     // If set to -1 it will to to the default of 10
+	InsertCacheLimit        int                     // Amount of events stored before batching into the database
+	StorageInsert           StorageInsert           // Handler for events being stored, you can use this to batch to events, or simply ignore them. For a batching default one use StorageInsertQueue, that uses the property InsertCacheLimit
+	AuthHook                AuthHook                // For the default connection, to authorize connections
+}
+
+func InitEngine(config EngineConfig) {
+
+	SetUpLogger()
+
+	if config.ServerID == "" {
+		config.ServerID = xid.New().String()
 	}
 
-	engine.insertQueue.insertChannel = make(chan InsertItem, 300)
+	if config.DBStorage == nil {
+		log.WithFields(log.Fields{
+			"EngineConfig": config,
+		}).Fatal("Missing DatabaseStorage on EngineConfig")
+	}
+
+	if config.CacheStorage == nil {
+		log.WithFields(log.Fields{
+			"EngineConfig": config,
+		}).Fatal("Missing CacheStorage on EngineConfig")
+	}
+
+	if config.PublishHandler == nil {
+		log.WithFields(log.Fields{
+			"EngineConfig": config,
+		}).Fatal("Missing PublishHandler on EngineConfig")
+	}
+
+	if config.PresenceHandler == nil {
+		log.WithFields(log.Fields{
+			"EngineConfig": config,
+		}).Fatal("Missing PresenceHandler on EngineConfig")
+	}
+
+	if config.PushNotificationHandler == nil {
+		log.WithFields(log.Fields{
+			"EngineConfig": config,
+		}).Fatal("Missing PushNotificationHandler on EngineConfig")
+	}
+
+	if config.HubsHandler == nil {
+		config.HubsHandler = NewHubsHandler(nil)
+	}
+
+	if config.DBWorkers == -1 {
+		config.DBWorkers = 10
+	}
+
+	engine = &Engine{
+		serverID:        config.ServerID,
+		hubsHandler:     config.HubsHandler,
+		databaseStorage: config.DBStorage,
+		cacheStorage:    config.CacheStorage,
+		insertQueue:     config.StorageInsert,
+		publisher:       config.PublishHandler,
+		presence:        config.PresenceHandler,
+		pushHandler:     config.PushNotificationHandler,
+		storageInsert:   config.StorageInsert,
+		authHook:        config.AuthHook,
+	}
+
+	CacheLimit = config.InsertCacheLimit
 
 	var index = 0
-	var databaseWorkers = 5
 	for {
 
-		if index > databaseWorkers {
-			return
+		if index > config.DBWorkers {
+			break
 		}
-
-		go startInsertingQueue(&engine.insertQueue, dbStorage.GetChannelRepository())
-		go startInsertingQueue(&engine.insertQueue, dbStorage.GetChannelRepository())
+		go engine.storageInsert.Start(config.DBStorage.GetChannelRepository())
 		index++
 	}
 }
 
+var CacheLimit = 70 // Amount of insert before batching
+
 const (
-	CacheLimit   = 70 // Amount of insert before batching
 	CacheTimeout = 5 * time.Second
 )
-/*
-func startInsertingQueue(queue *StorageInsertQueue, repo ChannelRepository) {
-
-	cache := make([]InsertItem, 0, CacheLimit)
-	tick := time.NewTicker(CacheTimeout)
-
-	for {
-		select {
-		case m := <-queue.insertChannel:
-			cache = append(cache, m)
-
-			if len(cache) < CacheLimit {
-				break
-			}
-
-			// Reset the timeout ticker.
-			// Otherwise we will get too many sends.
-			tick.Stop()
-
-			// Send the cached messages and reset the cache.
-			if err := repo.AddChannelEvents(cache); err != nil {
-				log.Printf("error: %v", err)
-			}
-			cache = cache[:0]
-
-			// Recreate the ticker, so the timeout trigger
-			// remains consistent.
-			tick = time.NewTicker(CacheTimeout)
-		case <-tick.C:
-			if len(cache) == 0 {
-				continue
-			}
-
-			if err := repo.AddChannelEvents(cache); err != nil {
-				log.Printf("error: %v", err)
-			}
-			cache = cache[:0]
-		}
-	}
-}
-*/
- func startInsertingQueue(queue *StorageInsertQueue, repo ChannelRepository) {
-
- 	for {
- 		select {
- 		case item, isActive := <-queue.insertChannel:
- 			{
-
- 				if !isActive {
- 					return
- 				}
-
- 				if err := repo.AddChannelEvent(item.AppID, item.Event.ChannelID, item.Event); err != nil {
- 					log.Printf("error: %v", err)
- 				}
-
- 			}
- 		}
- 	}
-}

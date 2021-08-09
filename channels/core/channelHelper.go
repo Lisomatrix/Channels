@@ -143,7 +143,7 @@ func JoinChannel(appID string, channelID string, clientID string) (bool, error) 
 	//GetEngine().GetCacheStorage().AddClientChannel(clientID, channelID)
 
 	// Notify current connected clients
-	hub := GetEngine().HubsHandler.ContainsHub(appID)
+	hub := GetEngine().GetHubsHandler().ContainsHub(appID)
 
 	if hub != nil {
 		hub.AddChannelToClient(clientID, channelID)
@@ -237,7 +237,7 @@ func LeaveChannel(appID string, channelID string, clientID string) (bool, error)
 	GetEngine().GetCacheStorage().RemoveClientChannels(clientID)
 
 	// Notify current connected clients
-	hub := GetEngine().HubsHandler.ContainsHub(appID)
+	hub := GetEngine().GetHubsHandler().ContainsHub(appID)
 
 	if hub != nil {
 		hub.RemoveChannelFromClient(clientID, channelID)
@@ -315,7 +315,7 @@ func DeleteChannel(appID string, channelID string) (bool, error) {
 	GetEngine().GetCacheStorage().RemoveChannel(appID, channelID)
 
 	// Notify current connected clients
-	GetEngine().HubsHandler.GetHub(appID).DeleteChannel(channelID)
+	GetEngine().GetHubsHandler().GetHub(appID).DeleteChannel(channelID)
 
 	return true, nil
 }
@@ -342,7 +342,7 @@ func SetChannelCloseStatus(appID string, channelID string, closed bool) (bool, e
 
 	if closed {
 		// Notify all connected client in case it is closing channel
-		GetEngine().HubsHandler.GetHub(appID).DeleteChannel(channelID)
+		GetEngine().GetHubsHandler().GetHub(appID).DeleteChannel(channelID)
 		// Remove from cache
 		GetEngine().GetCacheStorage().RemoveChannel(appID, channelID)
 	} else {

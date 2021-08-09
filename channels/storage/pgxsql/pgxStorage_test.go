@@ -8,9 +8,9 @@ import (
 const (
 	testDBUsername = "ChannelsTest"
 	testDBPassword = "test_password"
-	testDBName = "ChannelsTest"
-	testDBPort = "5432"
-	testDBHost = "127.0.0.1"
+	testDBName     = "ChannelsTest"
+	testDBPort     = "5432"
+	testDBHost     = "127.0.0.1"
 )
 
 func TestPGXStorage(t *testing.T) {
@@ -31,16 +31,6 @@ func TestPGXStorage(t *testing.T) {
 
 	if storage.GetDeviceRepository() == nil {
 		t.Errorf("Failed to get device repository \n")
-	}
-
-	exists, err := storage.GetAppRepository().AppExists("123")
-
-	if err != nil {
-		t.Errorf("Failed to check app existence %s \n", err.Error())
-	}
-
-	if exists {
-		t.Error("App exists query returned true, make sure the database is clean")
 	}
 }
 
@@ -87,13 +77,6 @@ func TestPGXChannelStorage(t *testing.T) {
 		t.Errorf("Failed to check channel existence %s \n", err.Error())
 	} else if !exists {
 		t.Errorf("Failed to check channel existence, returned false after one being created \n")
-	}
-
-	// Channels count
-	if count, err := repo.GetAllChannelsCount(); err != nil {
-		t.Errorf("Failed to get channel count %s \n", err.Error())
-	} else if count == 0 {
-		t.Errorf("Failed to get channel count, count is 0 while we have one channnel \n")
 	}
 
 	// Get channel
@@ -181,13 +164,6 @@ func TestPGXClientStorage(t *testing.T) {
 		t.Errorf("Failed to get app clients, length is 0 after one being created \n")
 	}
 
-	// Get all app clients count
-	if count, err := repo.GetAppClientsCount(appID); err != nil {
-		t.Errorf("Failed to get clients count %s \n", err.Error())
-	} else if count == 0 {
-		t.Errorf("Failed to get clients count, it was 0 after one being created \n")
-	}
-
 	// Get app client
 	if client, err := repo.GetAppClient(appID, clientID); err != nil {
 		t.Errorf("Failed to get client after it being creted %s \n", err.Error())
@@ -234,13 +210,6 @@ func TestPGXAppStorage(t *testing.T) {
 	if err := repo.CreateApp(appID, appName); err != nil {
 		t.Errorf("Failed to create app %s \n", err.Error())
 		return
-	}
-
-	// Check app existence
-	if exists, err := repo.AppExists(appID); err != nil {
-		t.Errorf("Failed to check app existence %s \n", err.Error())
-	} else if !exists {
-		t.Error("App exists query returned false after app was created")
 	}
 
 	// Update app
