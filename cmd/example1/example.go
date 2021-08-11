@@ -121,6 +121,7 @@ func main() {
 	}
 
 	stor := gormsql.NewGormDatabaseStorage(db)
+	stor.Migrate()
 
 	//dbStorage := pgxsql.NewSQLStorageDatabase()
 	cacheHandler := cache.NewLedisCacheStorage()
