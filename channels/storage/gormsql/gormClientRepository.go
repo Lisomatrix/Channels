@@ -129,7 +129,7 @@ func (repo *GormClientRepository) GetClientWithChannels(clientID string) (*Chann
 func (repo *GormClientRepository) GetClientAllowedChannels(clientID string) ([]string, error) {
 	var client ChannelsClient
 
-	tx := repo.gormDB.Select("Channels.ID").Preload("Channels").First(&client)
+	tx := repo.gormDB.Model(&ChannelsClient{}).Select("Channels.ID").Preload("Channels").First(&client)
 
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {

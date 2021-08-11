@@ -3,9 +3,10 @@ package pgxsql
 import (
 	"context"
 	"fmt"
-	"github.com/lisomatrix/channels/channels/core"
 	"os"
 	"strings"
+
+	"github.com/lisomatrix/channels/channels/core"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -501,7 +502,7 @@ func (repo *PGXChannelRepository) AddChannelEvents(items []core.InsertItem) erro
 
 // GetChannelEventsAfter - Get all events after given timestamp
 func (repo *PGXChannelRepository) GetChannelEventsAfter(appID string, channelID string, timestamp int64) ([]*core.ChannelEvent, error) {
-	rows, err := repo.dbHolder.db.Query(repo.ctx, selectEventsSinceTimeStampSQL, appID, channelID, timestamp)
+	rows, err := repo.dbHolder.db.Query(repo.ctx, selectEventsSinceTimeStampSQL, channelID, appID, timestamp)
 
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "GetChannelEventsAfter: query failed: %v\n", err)
@@ -670,7 +671,7 @@ func (repo *PGXChannelRepository) rowToChannel(rows pgx.Rows) (*core.Channel, er
 		Persistent: persistent,
 		Private:    private,
 		Presence:   presence,
-		Push: 		push,
+		Push:       push,
 	}
 
 	return chann, err
@@ -700,7 +701,7 @@ func (repo *PGXChannelRepository) singleRowToChannel(rows pgx.Row) (*core.Channe
 		Persistent: persistent,
 		Private:    private,
 		Presence:   presence,
-		Push: 		push,
+		Push:       push,
 	}
 
 	return chann, err
