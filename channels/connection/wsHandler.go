@@ -144,7 +144,7 @@ func OptimizedRequestHandler(context *gin.Context) {
 	if identity == nil {
 		iden, isOK := auth.VerifyToken(token)
 
-		if !isOK || !identity.CanUseAppID(appID) {
+		if !isOK || !iden.CanUseAppID(appID) {
 			writer.WriteHeader(http.StatusUnauthorized)
 			return
 		} else {

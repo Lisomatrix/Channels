@@ -62,8 +62,8 @@ func Start(host string, port string, router *gin.Engine) {
 	router.DELETE("/channel/:channelID", core.DeleteChannelHandler)
 	router.POST("/channel/:channelID/close", core.PostCloseChannel)
 	router.POST("/channel/:channelID/open", core.PostOpenChannel)
-	//router.GET("/channel/open", core.GetOpenChannels)
-	//router.GET("/channel/private", core.GetPrivateChannels)
+	router.GET("/channel/open", core.GetOpenChannels)
+	router.GET("/channel/private", core.GetPrivateChannels)
 
 	// Channel Sync routes
 	router.GET("/sync/:channelID/:firstTimeStamp/to/:secondTimeStamp", core.GetMessagesBetweenTimeStamps)
