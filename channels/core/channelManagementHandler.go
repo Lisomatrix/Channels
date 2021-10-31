@@ -517,7 +517,8 @@ func GetOpenChannels(context *gin.Context) {
 	}
 
 	if identity == nil {
-		identity, isOK := auth.VerifyToken(token)
+		iden, isOK := auth.VerifyToken(token)
+		identity = &iden
 
 		// If not valid return
 		if !isOK || !identity.CanUseAppID(appID) {
